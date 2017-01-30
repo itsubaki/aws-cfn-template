@@ -32,9 +32,11 @@
 ## バージョン管理
 
  + システム全体のバージョンとは
-  - AWSリソース+ミドルウェア+アプリケーション
+  - AWSリソース+アプリケーション
 
-# ネットワーク
+# AWSリソース
+
+## ネットワーク
 
  1. VPC
  2. Subnet
@@ -43,21 +45,21 @@
  5. LoadBalancer
  6. Route53
 
-# ミドルウェア
+## ミドルウェア
 
  1. RDS
  2. S3Bucket/S3Endpoint
  3. ElastiCache
  4. 等
 
-# アプリケーション
+## アプリケーション
 
-## EC2パターン
+### EC2
 
  1. EC2
  2. LaunchConfiguration
  3. AutoScalingGroup
 
-### UserData
+#### UserData
 
-## ECSパターン
+### ECS
