@@ -1,4 +1,4 @@
-# Immutable system on aws
+# cfn-template
 
 ## 解決したいもの
 
