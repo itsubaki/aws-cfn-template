@@ -1,0 +1,125 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description:
+ AWS Network Resource
+
+Parameters:
+ ProjectName:
+  Description: ""
+  Type: String
+  Default: Dev
+
+ CidrBlockVPC:
+  Description: ""
+  Type: String
+  Default: 10.0.0.0/16
+
+ CidrBlockPublicSubnetA:
+  Description: ""
+  Type: String
+  Default: 10.0.0.0/27
+
+ CidrBlockPublicSubnetC:
+  Description: ""
+  Type: String
+  Default: 10.0.0.32/27
+
+ CidrBlockPrivateSubnetA:
+  Description: ""
+  Type: String
+  Default: 10.0.0.64/27
+
+ CidrBlockPrivateSubnetC:
+  Description: ""
+  Type: String
+  Default: 10.0.0.96/27
+
+Outputs:
+ ProjectName:
+  Value: !Ref ProjectName
+  Export:
+   Name: !Ref ProjectName
+
+Resources:
+ VPC:
+  Type: AWS::EC2::VPC
+  Properties:
+   CidrBlock: !Ref CidrBlockVPC
+   EnableDnsSupport: "true"
+   EnableDnsHostnames: "true"
+   InstanceTenancy: default
+   Tags:
+    - Key: Name
+      Value: !Sub "VPC-${ProjectName}"
+
+ PublicRouteTable:
+  Type: AWS::EC2::RouteTable
+  Properties:
+   VpcId: !Ref VPC
+   Tags:
+    - Key: Name
+      Value: !Sub "PublicRouteTable-${ProjectName}"
+
+ PrivateRouteTable:
+  Type: AWS::EC2::RouteTable
+  Properties:
+   VpcId: !Ref VPC
+   Tags:
+    - Key: Name
+      Value: !Sub "PrivateRouteTable-${ProjectName}"
+
+ PublicSubnetA:
+  Type: AWS::EC2::Subnet
+  Properties:
+   VpcId: !Ref VPC
+   CidrBlock: !Ref CidrBlockPublicSubnetA
+   AvailabilityZone: !Select [ "0", !GetAZs ""]
+   Tags:
+    - Key: Name
+      Value: !Sub "PublicSubnetA-${ProjectName}"
+ PublicSubnetARouteTableAssociation:
+  Type: AWS::EC2::SubnetRouteTableAssociation
+  Properties:
+   SubnetId: !Ref PublicSubnetA
+   RouteTableId: !Ref PublicRouteTable
+
+ PublicSubnetC:
+  Type: AWS::EC2::Subnet
+  Properties:
+   VpcId: !Ref VPC
+   CidrBlock: !Ref CidrBlockPublicSubnetC
+   AvailabilityZone: !Select [ "1", !GetAZs ""]
+   Tags:
+    - Key: Name
+      Value: !Sub "PublicSubnetC-${ProjectName}"
+ PublicSubnetCRouteTableAssociation:
+  Type: AWS::EC2::SubnetRouteTableAssociation
+  Properties:
+   SubnetId: !Ref PublicSubnetC
+   RouteTableId: !Ref PublicRouteTable
+
+ PrivateSubnetA:
+
+ PrivateSubnetC:
+
+ InternetGateway:
+
+ AttachGateway:
+
+ Route:
+
+ InternetSecurityGroup:
+
+ ApplicationSecurityGroup:
+
+ DataStoreSecurityGroup:
+
+ ApplicationLoadBalancer:
+
+ ApplicationLoadBalancerListener:
+
+ ApplicationLoadBalancerTargetGroup:
+
+ Route53DNSRecord:
+
+
