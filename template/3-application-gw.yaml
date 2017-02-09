@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
 Description:
- AWS Application(ECS) Resource
+ AWS Application(API Gateway) Resource
 
 Parameters:
 

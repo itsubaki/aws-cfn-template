@@ -9,8 +9,12 @@ Parameters:
   Type: String
 
  MasterUsername:
+  Description: ""
+  Type: String
 
  MasterUserPassword:
+  Description: ""
+  Type: String
 
  DBInstanceClass:
   Description: ""
@@ -26,12 +30,28 @@ Parameters:
 
 Outputs:
  S3Bucket:
+  Desription: ""
+  Value: !Ref S3Bucket
+  Export:
+   Name: !Sub "S3Bucket-${ProjectName}"
 
  S3Endpoint:
+  Desription: ""
+  Value: !Ref S3Endpoint
+  Export:
+   Name: !Sub "S3Endpoint-${ProjectName}"
+
+ DBCluster:
+  Description: ""
+  Value: !Ref DBCluster
 
  DBClusterEndpointURL:
+  Description: ""
+  Value: !GetAtt DBCluster.Endpoint.Address
 
  DBClusterEndpointPort:
+  Descirption: ""
+  Value: !GetAtt DBCluster.Endpoint.Port
 
 Resources:
  S3Bucket:

@@ -103,8 +103,34 @@ Resources:
    RouteTableId: !Ref PublicRouteTable
 
  PrivateSubnetA:
+  Type: AWS::EC2::Subnet
+  Properties:
+   VpcId: !Ref VPC
+   CidrBlock: !Ref CidrBlockPrivateSubnetA
+   AvailabilityZone: !Select [ "0", !GetAZs ""]
+   Tags:
+    - Key: Name
+      Value: !Sub "PrivateSubnetA-${ProjectName}"
+ PrivateSubnetARouteTableAssociation:
+  Type: AWS::EC2::SubnetRouteTableAssociation
+  Properties:
+   SubnetId: !Ref PrivateSubnetA
+   RouteTableId: !Ref PrivateRouteTable
 
  PrivateSubnetC:
+  Type: AWS::EC2::Subnet
+  Properties:
+   VpcId: !Ref VPC
+   CidrBlock: !Ref CidrBlockPrivateSubnetC
+   AvailabilityZone: !Select [ "0", !GetAZs ""]
+   Tags:
+    - Key: Name
+      Value: !Sub "PrivateSubnetC-${ProjectName}"
+ PrivateSubnetCRouteTableAssociation:
+  Type: AWS::EC2::SubnetRouteTableAssociation
+  Properties:
+   SubnetId: !Ref PrivateSubnetC
+   RouteTableId: !Ref PrivateRouteTable
 
  InternetGateway:
   Type: AWS::EC2::InternetGateway

@@ -4,7 +4,57 @@ Description:
  AWS Application(EC2) Resource
 
 Parameters:
+ ProjectName:
+  Description: ""
+  Type: String
+
+ ImageId:
+  Description: ""
+  Type: String
+  Default: "ami-"
+
+ InstanceType:
+  Description: ""
+  Type: String
+  Default: "m4.large"
+
+ InstanceNum:
+  Description: ""
+  Type: String
+  Default: "2"
+
+ KeyPair:
+  Description: ""
+  Type: String
+  Default: "key-pair"
 
 Outputs:
 
 Resources:
+ LaunchConfiguration:
+  Type: AWS::AutoScaling::LaunchConfiguration
+  Properties:
+   ImageId: !Ref ImageId
+   InstanceType: !Ref InstanceType
+   KeyName: !Ref KeyPair
+   SecurityGroups:
+    - { "Fn::ImportValue": !Sub "ApplicationSecurityGroup-${ProjectName}" }
+   UserData: !Base64 !Join ["", ["#! /bin/bash¥n", "yum update -y¥n", "yum install -y httpd¥n", "chkconfig httpd on¥n", "service httpd start¥n"]]
+
+ AutoScalingGroup:
+  Type: AWS::AutoScaling::AutoScalingGroup
+  Properties:
+   LaunchConfigurationName: !Ref LaunchConfiguration
+   DesiredCapacity: !Ref InstanceNum
+   MaxSize: !Ref InstanceNum
+   MinSize: !Ref InstanceNum
+   LoadBalancerName:
+    - !Sub "ApplicationLoadBalancer-${ProjectName}"
+   AvailabilityZones:
+    - !Select [ "0", !GetAZs "" ]
+    - !Select [ "1", !GetAZs "" ]
+   VPCZoneIdentifier:
+    - !Sub "PrivateSubnetA-${ProjectName}"
+    - !Sub "PrivateSubnetC-${ProjectName}"
+   HealthCheckType: "ELB"
+   HealthCheckGracePeriod: 60
