@@ -26,6 +26,7 @@
  + 記法
   - YAML形式で記述する
   - JSON形式は人間には記述しにくい/コメントが書けない
+  - policyは相変わらずjson...
  + サブコマンドを活用する
   - aws cloudformation validate-template
   - aws cloudformation create-change-set
@@ -78,7 +79,7 @@
  - UserDataはEC2インスタンス起動後に自動実行されるスクリプト。
   + docker pull/runでコンテナを実行
   + ansible/chefとか
-  + アプリがよくできているなら、aws s3 cpでアプリをダウンロードして実行とか。
+  + アプリがrpmとかなら、aws s3 cpでアプリをダウンロードして実行とか。
 
 
 ### ECS
