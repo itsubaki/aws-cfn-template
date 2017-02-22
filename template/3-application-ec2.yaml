@@ -29,6 +29,7 @@ Parameters:
   Default: "key-pair"
 
 Outputs:
+  
 
 Resources:
  LaunchConfiguration:
@@ -39,7 +40,19 @@ Resources:
    KeyName: !Ref KeyPair
    SecurityGroups:
     - { "Fn::ImportValue": !Sub "ApplicationSecurityGroup-${ProjectName}" }
-   UserData: !Base64 !Join ["", ["#! /bin/bash¥n", "yum update -y¥n", "yum install -y httpd¥n", "chkconfig httpd on¥n", "service httpd start¥n"]]
+   UserData:
+     Fn::Base64: !Sub
+      - |+
+        #!/bin/bash
+        yum update -y
+        echo ${AWS::StackName}
+        echo ${StackName}
+        echo ${Region}
+      -
+        StackName:
+          Fn::FindInMap: ["", !Ref AWS::StackName, ""]
+        Region:
+          Fn::Ref: AWS::StackName
 
  AutoScalingGroup:
   Type: AWS::AutoScaling::AutoScalingGroup
