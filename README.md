@@ -6,7 +6,9 @@
 
 1. 環境構築の再現性を100%にしたい
 2. 開発環境と本番環境を同じにしたい
-3. (new!) opslessにしてopsエンジニアを救いたい
+3. opslessにしたい
+ + 全部フルマネージドサービス使えばある程度はなくなる。
+ + 設定変更やマイグレーション等は残りそう。
 
 ## 解決方法
 
@@ -73,6 +75,9 @@
  1. EC2
  2. LaunchConfiguration
  3. AutoScalingGroup
+
+
+### Amazon Linux
 
 #### UserData
 
