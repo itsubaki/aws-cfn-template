@@ -1,4 +1,4 @@
-# cfn-template
+# aws-cfn-template
 
 # 概要
 
