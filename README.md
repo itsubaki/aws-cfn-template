@@ -84,17 +84,17 @@
  - UserDataはEC2インスタンス起動後に自動実行されるスクリプト。
   + docker pull/runでコンテナを実行
   + ansible/chefとか
-  + アプリがrpmとかなら、aws s3 cpでアプリをダウンロードして実行とか。
+  + aws s3 cp → rpm -ivhとか
 
 
 ### ECS
 
- - EC2上でdockerを動かすより、リソースを効率よく使える。
+ - EC2上でdockerを動かすよりリソースを効率よく使える。
  - 罠もある
 
 ### API Gateway + Lambda
 
- - opslessにできる(!?)
+ - opslessにできる(?)
  - LambdaにDLQが追加された。
-  + やっと実用レベルになったと思う。
-  + 今までのLambdaはエラー処理に弱すぎた。
+  + 実用レベルになったと思う。
+  + 今まではエラー処理に弱すぎた。
