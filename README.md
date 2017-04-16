@@ -2,25 +2,28 @@
 
 # 概要
 
-## 解決したいもの
+## 課題
+
+
+## やりたいこと
 
 1. 環境構築の再現性を100%にしたい
 2. 開発環境と本番環境を同じにしたい
 3. opslessにしたい
   + 全部フルマネージドサービス使えばある程度はなくなる。
-  + 設定変更やマイグレーション等は残りそう。
+  + BeanstalkやGoogleAppEngineですむならそれが一番いい選択肢
+  + ある程度自由にリソースを使いたい場合はCloudFormation、Terraform等。
+  + 設定変更やマイグレーション等のopsはlessにできない(？)
 
 ## 解決方法
 
 1. 1ステップでゼロからシステムを構築する
-  + 前提条件はAWSアカウントのみとする
+  + 前提条件はアカウントのみとする
 2. システム全体のバージョンを管理する
   + 開発環境で任意のバージョンを構築する
   + 本番環境で複数のバージョンを同時に構築する
 
-# 基本的な考え方
-
-## CloudFormationを利用する
+# CloudFormation
 
  + AWSリソースの一括生成
    - 失敗時にロールバック(理由も出力される)
@@ -29,7 +32,7 @@
    - YAML形式で記述する
    - JSON形式は人間には記述しにくい/コメントが書けない
    - policyは相変わらずjson...
- + サブコマンドを活用する
+ + サブコマンドを使う
    - aws cloudformation validate-template
    - aws cloudformation create-change-set
  + 下のレイヤーから組み立てる
@@ -44,16 +47,9 @@
    - ランダム文字列を生成したい場合がある
    - シェルと組み合わせる
 
-## バージョン管理
+## AWSリソース
 
- + システム全体のバージョンとは
-   - AWSリソース+アプリケーション
-   - どうやって管理するか?
-   - Beanstalkだとやってくれる。
-
-# AWSリソース
-
-## ネットワーク
+### ネットワーク
 
  1. VPC
  2. Subnet
@@ -62,39 +58,35 @@
  5. LoadBalancer
  6. Route53
 
-## ミドルウェア
+### ミドルウェア
 
  1. RDS
  2. S3Bucket/S3Endpoint
  3. ElastiCache
  4. 等
 
-## アプリケーション
+### アプリケーション
 
-### EC2
+#### EC2
 
  1. EC2
  2. LaunchConfiguration
  3. AutoScalingGroup
 
-
-### Amazon Linux
-
-#### UserData
-
+ - UserData
  - UserDataはEC2インスタンス起動後に自動実行されるスクリプト。
    + docker pull/runでコンテナを実行
    + ansible/chefとか
    + aws s3 cp → rpm -ivhとか
 
-
-### ECS
+#### ECS
 
  - EC2上でdockerを動かすよりリソースを効率よく使える。
- - 罠もある
+ - 管理が大変そうではある。
 
-### API Gateway + Lambda
+#### API Gateway + Lambda
 
+ - GAEに近い。
  - opslessにできる(?)
  - LambdaにDLQが追加された。
    + 実用レベルになったと思う。
