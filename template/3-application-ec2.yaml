@@ -38,6 +38,11 @@ Resources:
    ImageId: !Ref ImageId
    InstanceType: !Ref InstanceType
    KeyName: !Ref KeyPair
+   BlockDeviceMappings:
+    - DeviceName: "/dev/xvda"
+      Ebs:
+       DeleteOnTermination: true
+       VolumeType: "gp2"
    SecurityGroups:
     - { "Fn::ImportValue": !Sub "ApplicationSecurityGroup-${ProjectName}" }
    UserData:
@@ -48,6 +53,8 @@ Resources:
         echo ${AWS::StackName}
         echo ${StackName}
         echo ${Region}
+
+        /opt/aws/bin/cfn-signal -e 0 --stack ${AWS::StackName} --region ${AWS::Region} --resource AutoScalingGroup
       -
         StackName:
           Fn::FindInMap: ["", !Ref AWS::StackName, ""]
@@ -56,6 +63,9 @@ Resources:
 
  AutoScalingGroup:
   Type: AWS::AutoScaling::AutoScalingGroup
+  CreationPolicy:
+   ResourceSignal:
+    Timeout: "PT10M"
   Properties:
    LaunchConfigurationName: !Ref LaunchConfiguration
    DesiredCapacity: !Ref InstanceNum
