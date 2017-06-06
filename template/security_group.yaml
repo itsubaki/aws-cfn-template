@@ -1,0 +1,51 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description:
+ AWS SecurityGroup Resource
+
+Parameters:
+ ProjectName:
+  Description: ""
+  Type: String
+  Default: Dev
+
+Outputs:
+ ProjectName:
+  Value: !Ref ProjectName
+ InternetSecurityGroup:
+  Value: !Ref FrontendSecurityGroup
+  Export:
+   Name: !Sub "${ProjectName}-FrontendSecurityGroup"
+
+Resources:
+ FrontendSecurityGroup:
+  Type: AWS::EC2::SecurityGroup
+  Properties:
+   GroupDescription: "Frontend SecurityGroup"
+   VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-VPC" }
+   SecurityGroupIngress:
+    - CidrIp: "0.0.0.0/0"
+      IpProtocol: "tcp"
+      FromPort: "80"
+      ToPort: "80"
+    - CidrIp: "0.0.0.0/0"
+      IpProtocol: "tcp"
+      FromPort: "22"
+      ToPort: "22"
+   Tags:
+    - Key: Name
+      Value: !Sub "${ProjectName}-Frontend"
+
+ BackendSecurityGroup:
+  Type: AWS::EC2::SecurityGroup
+  Properties:
+   GroupDescription: "Backend SecurityGroup"
+   VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-VPC" }
+   SecurityGroupIngress:
+     - SourceSecurityGroupId: !Ref FrontendSecurityGroup
+       IpProtocol: "-1"
+       FromPort: "-1"
+       ToPort: "-1"
+   Tags:
+    - Key: Name
+      Value: !Sub "${ProjectName}-Backend"

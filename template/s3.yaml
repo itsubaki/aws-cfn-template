@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description:
+ AWS S3 Resource
+
+Parameters:
+ ProjectName:
+  Description: ""
+  Type: String
+
+Outputs:
+ S3Bucket:
+  Description: ""
+  Value: !Ref S3Bucket
+  Export:
+   Name: !Sub "${ProjectName}-S3Bucket"
+
+ S3Endpoint:
+  Description: ""
+  Value: !Ref S3Endpoint
+  Export:
+   Name: !Sub "${ProjectName}-S3Endpoint"
+
+Resources:
+ S3Bucket:
+  Type: AWS::S3::Bucket
+  Properties:
+   BucketName: !Ref ProjectName
+   Tags:
+    - Key: Name
+      Value: !Sub "${ProjectName}"
+
+ S3Endpoint:
+  Type: AWS::EC2::VPCEndpoint
+  Properties:
+   VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-VPC" }
+   ServiceName: !Sub "com.amazonaws.${AWS::Region}.s3"
+   RouteTableIds:
+    - { "Fn::ImportValue": !Sub "${ProjectName}-PublicRouteTable" }
+    - { "Fn::ImportValue": !Sub "${ProjectName}-PrivateRouteTable" }

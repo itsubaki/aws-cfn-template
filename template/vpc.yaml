@@ -1,17 +1,13 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
 Description:
- AWS Network Resource
+ AWS VPC Resource
 
 Parameters:
  ProjectName:
   Description: ""
   Type: String
   Default: Dev
-
- DomainName:
-  Description: ""
-  Type: String
 
  CidrBlockVPC:
   Description: ""
@@ -43,6 +39,35 @@ Outputs:
   Value: !Ref ProjectName
   Export:
    Name: !Ref ProjectName
+ VPC:
+   Value: !Ref VPC
+   Export:
+    Name: !Sub "${ProjectName}-VPC"
+ PublicRouteTable:
+   Value: !Ref PublicRouteTable
+   Export:
+    Name: !Sub "${ProjectName}-PublicRouteTable"
+ PrivateRouteTable:
+   Value: !Ref PrivateRouteTable
+   Export:
+    Name: !Sub "${ProjectName}-PrivateRouteTable"
+ PublicSubnetA:
+   Value: !Ref PublicSubnetA
+   Export:
+    Name: !Sub "${ProjectName}-PublicSubnetA"
+ PublicSubnetC:
+   Value: !Ref PublicSubnetC
+   Export:
+    Name: !Sub "${ProjectName}-PublicSubnetC"
+ PrivateSubnetA:
+   Value: !Ref PrivateSubnetA
+   Export:
+    Name: !Sub "${ProjectName}-PrivateSubnetA"
+ PrivateSubnetC:
+   Value: !Ref PrivateSubnetC
+   Export:
+    Name: !Sub "${ProjectName}-PrivateSubnetC"
+
 
 Resources:
  VPC:
@@ -54,7 +79,7 @@ Resources:
    InstanceTenancy: default
    Tags:
     - Key: Name
-      Value: !Sub "VPC-${ProjectName}"
+      Value: !Sub "${ProjectName}"
 
  PublicRouteTable:
   Type: AWS::EC2::RouteTable
@@ -62,7 +87,7 @@ Resources:
    VpcId: !Ref VPC
    Tags:
     - Key: Name
-      Value: !Sub "PublicRouteTable-${ProjectName}"
+      Value: !Sub "${ProjectName}"
 
  PrivateRouteTable:
   Type: AWS::EC2::RouteTable
@@ -70,7 +95,7 @@ Resources:
    VpcId: !Ref VPC
    Tags:
     - Key: Name
-      Value: !Sub "PrivateRouteTable-${ProjectName}"
+      Value: !Sub "${ProjectName}"
 
  PublicSubnetA:
   Type: AWS::EC2::Subnet
@@ -80,7 +105,7 @@ Resources:
    AvailabilityZone: !Select [ "0", !GetAZs ""]
    Tags:
     - Key: Name
-      Value: !Sub "PublicSubnetA-${ProjectName}"
+      Value: !Sub "${ProjectName}"
  PublicSubnetARouteTableAssociation:
   Type: AWS::EC2::SubnetRouteTableAssociation
   Properties:
@@ -95,7 +120,7 @@ Resources:
    AvailabilityZone: !Select [ "1", !GetAZs ""]
    Tags:
     - Key: Name
-      Value: !Sub "PublicSubnetC-${ProjectName}"
+      Value: !Sub "${ProjectName}"
  PublicSubnetCRouteTableAssociation:
   Type: AWS::EC2::SubnetRouteTableAssociation
   Properties:
@@ -110,7 +135,7 @@ Resources:
    AvailabilityZone: !Select [ "0", !GetAZs ""]
    Tags:
     - Key: Name
-      Value: !Sub "PrivateSubnetA-${ProjectName}"
+      Value: !Sub "${ProjectName}"
  PrivateSubnetARouteTableAssociation:
   Type: AWS::EC2::SubnetRouteTableAssociation
   Properties:
@@ -122,10 +147,10 @@ Resources:
   Properties:
    VpcId: !Ref VPC
    CidrBlock: !Ref CidrBlockPrivateSubnetC
-   AvailabilityZone: !Select [ "0", !GetAZs ""]
+   AvailabilityZone: !Select [ "1", !GetAZs ""]
    Tags:
     - Key: Name
-      Value: !Sub "PrivateSubnetC-${ProjectName}"
+      Value: !Sub "${ProjectName}"
  PrivateSubnetCRouteTableAssociation:
   Type: AWS::EC2::SubnetRouteTableAssociation
   Properties:
@@ -137,7 +162,7 @@ Resources:
   Properties:
    Tags:
     - Key: Name
-      Value: !Sub "InternetGateway-${ProjectName}"
+      Value: !Sub "${ProjectName}"
 
  AttachGateway:
   Type: AWS::EC2::VPCGatewayAttachment
@@ -151,62 +176,3 @@ Resources:
    RouteTableId: !Ref PublicRouteTable
    DestinationCidrBlock: 0.0.0.0/0
    GatewayId: !Ref InternetGateway
-
- InternetSecurityGroup:
-  Type: AWS::EC2::SecurityGroup
-  Properties:
-   GroupDescription: ""
-   VpcId: !Ref VPC
-   SecurityGroupIngress:
-    - CidrIp: "0.0.0.0/0"
-      IpProtocol: "tcp"
-      FromPort: "80"
-      ToPort: "80"
-   Tags:
-    - Key: Name
-      Value: !Sub "InternetSecurityGroup-${ProjectName}"
-
- ApplicationSecurityGroup:
-
- DataStoreSecurityGroup:
-
- ApplicationLoadBalancer:
-  Type: AWS::ElasticLoadBalancingV2::LoadBalancer
-  Properties:
-   Scheme: internet-facing
-   SecurityGroups:
-    - !Ref InternetSecurityGroup
-   Subnets:
-    - !Ref PublicSubnetA
-    - !Ref PublicSubnetC
-   Tags:
-    - Key: Name
-      Value: !Sub "ApplicationLoadBalancer-${ProjectName}"
-
- ApplicationLoadBalancerListener:
-  Type: AWS::ElasticLoadBalancingV2::Listener
-  Properties:
-   LoadBalancerArn: !Ref ApplicationLoadBalancer
-   Port: "80"
-   Protocol: "HTTP"
-   DefaultActions:
-    - TargetGroupArn: !Ref ApplicationLoadBalancerTargetGroup
-      Type: forward
-
- ApplicationLoadBalancerTargetGroup:
-  Type: AWS::ElasticLoadBalancingV2::TargetGroup
-  Properties:
-   Port: "80"
-   Protocol: "HTTP"
-   VpcId: !Ref VPC
-
- Route53DNSRecord:
-  Type: AWS::Route53::RecordSet
-  Properties:
-   Type: A
-   AliasTaret:
-    DNSName: !GetAtt ApplicationLoadBalancer.DNSName
-    HostedZoneId: !GetAtt ApplicationLoadBalancer.CanonicalHostedZoneID
-   Comment: ""
-   HostedZoneName: !Join [ "", [!Ref DomainName, "."]]
-   Name: !Join [ "", [!Ref ProjectName, ".", !Ref DomainName, "."]]

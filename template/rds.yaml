@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
 Description:
- AWS Middle Resource
+ AWS RDS(Aurora) Resource
 
 Parameters:
  ProjectName:
@@ -29,18 +29,6 @@ Parameters:
    - db.r3.8xlarge
 
 Outputs:
- S3Bucket:
-  Desription: ""
-  Value: !Ref S3Bucket
-  Export:
-   Name: !Sub "S3Bucket-${ProjectName}"
-
- S3Endpoint:
-  Desription: ""
-  Value: !Ref S3Endpoint
-  Export:
-   Name: !Sub "S3Endpoint-${ProjectName}"
-
  DBCluster:
   Description: ""
   Value: !Ref DBCluster
@@ -54,30 +42,13 @@ Outputs:
   Value: !GetAtt DBCluster.Endpoint.Port
 
 Resources:
- S3Bucket:
-  Type: AWS::S3::Bucket
-  Properties:
-   BucketName: !Ref ProjectName
-   Tags:
-    - Key: Name
-      Value: !Sub "S3Bucket-${ProjectName}"
-
- S3Endpoint:
-  Type: AWS::EC2::VPCEndpoint
-  Properties:
-   VpcId: { "Fn::ImportValue": !Sub "VPC-${ProjectName}" }
-   ServiceName: !Sub "com.amazonaws.${AWS::Region}.s3"
-   RouteTableId:
-    - { "Fn::ImportValue": !Sub "PublicRouteTable-${ProjectName}" }
-    - { "Fn::ImportValue": !Sub "PrivateRouteTable-${ProjectName}" }
-
  DBSubnetGroup:
   Type: AWS::RDS::DBSubnetGroup
   Properties:
    DBSubnetGroupDescription: "Multi-AZ"
    SubnetIds:
-    - { "Fn::ImportValue": !Sub "PrivateSubnetA-${ProjectName}" }
-    - { "Fn::ImportValue": !Sub "PrivateSubnetC-${ProjectName}" }
+    - { "Fn::ImportValue": !Sub "${ProjectName}-PrivateSubnetA" }
+    - { "Fn::ImportValue": !Sub "${ProjectName}-PrivateSubnetC" }
 
  DBClusterParameterGroup:
   Type: AWS::RDS:DBClusterParameterGroup
@@ -99,7 +70,7 @@ Resources:
    DBSubnetGroupName: !Ref DBSubnetGroup
    DBClusterParameterGroupName: !Ref DBClusterParameterGroup
    VpcSecurityGroupIds:
-    - { "Fn::ImportValue", !Sub "DataStoreSecurityGroup-${ProjectName}"}
+    - { "Fn::ImportValue": !Sub "${ProjectName}-BackendSecurityGroup"}
 
  DBInstanceA:
   Type: AWS::RDS::DBInstance

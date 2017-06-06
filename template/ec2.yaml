@@ -1,0 +1,76 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description:
+ AWS EC2 Resource
+
+Parameters:
+ ProjectName:
+  Description: ""
+  Type: String
+
+ ImageId:
+  Description: ""
+  Type: String
+  Default: "ami-d85e7fbf"
+
+ InstanceType:
+  Description: ""
+  Type: String
+  Default: "t2.micro"
+  AllowedValues:
+   - t2.nano
+   - t2.micro
+   - t2.small
+   - t2.medium
+
+ InstanceNum:
+  Description: ""
+  Type: String
+  Default: "1"
+
+ KeyPair:
+  Description: ""
+  Type: String
+  Default: "keypair"
+
+Resources:
+ LaunchConfiguration:
+  Type: AWS::AutoScaling::LaunchConfiguration
+  Properties:
+   ImageId: !Ref ImageId
+   InstanceType: !Ref InstanceType
+   KeyName: !Ref KeyPair
+   BlockDeviceMappings:
+    - DeviceName: "/dev/sda1"
+      Ebs:
+       DeleteOnTermination: true
+       VolumeType: "gp2"
+   SecurityGroups:
+    - { "Fn::ImportValue": !Sub "${ProjectName}-FrontendSecurityGroup" }
+#   UserData:
+#     Fn::Base64: !Sub
+#      - |+
+#        #!/bin/bash
+#        yum update -y
+#        /opt/aws/bin/cfn-signal -e 0 --stack ${AWS::StackName} --region ${AWS::Region} --resource AutoScalingGroup
+
+ AutoScalingGroup:
+  Type: AWS::AutoScaling::AutoScalingGroup
+#  CreationPolicy:
+#   ResourceSignal:
+#    Timeout: "PT10M"
+  Properties:
+   LaunchConfigurationName: !Ref LaunchConfiguration
+   DesiredCapacity: !Ref InstanceNum
+   MaxSize: !Ref InstanceNum
+   MinSize: !Ref InstanceNum
+#   LoadBalancerNames:
+#    - !Sub "${ProjectName}-FrontendSecurityGroup"
+#   AvailabilityZones:
+#    - !Select [ "0", !GetAZs ""]
+#    - !Select [ "1", !GetAZs ""]
+   VPCZoneIdentifier:
+    - { "Fn::ImportValue": !Sub "${ProjectName}-PrivateSubnetA"}
+    - { "Fn::ImportValue": !Sub "${ProjectName}-PrivateSubnetC"}
+   HealthCheckType: "EC2"
+   HealthCheckGracePeriod: 60
