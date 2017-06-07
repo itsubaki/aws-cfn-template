@@ -7,7 +7,6 @@ Parameters:
  ProjectName:
   Description: ""
   Type: String
-  Default: Dev
 
  DomainName:
   Description: ""
@@ -18,9 +17,9 @@ Resources:
   Type: AWS::Route53::RecordSet
   Properties:
    Type: A
-   AliasTaret:
+   AliasTarget:
     DNSName: { "Fn::ImportValue": !Sub "${ProjectName}-ALBDNSName" }
     HostedZoneId: { "Fn::ImportValue": !Sub "${ProjectName}-ALBCanonicalHostedZoneID" }
    Comment: ""
-   HostedZoneName: !Join [ "", [!Ref DomainName, "."]]
-   Name: !Join [ "", [!Ref ProjectName, ".", !Ref DomainName, "."]]
+   HostedZoneName: !Ref DomainName
+   Name: !Join [ "", [!Ref ProjectName, ".", !Ref DomainName]]
