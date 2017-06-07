@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description:
+ AWS Route53 Resource
+
+Parameters:
+ ProjectName:
+  Description: ""
+  Type: String
+
+ DomainName:
+  Description: ""
+  Type: String
+
+Resources:
+ Route53DNSRecord:
+  Type: AWS::Route53::RecordSet
+  Properties:
+   Type: A
+   AliasTarget:
+    DNSName: { "Fn::ImportValue": !Sub "${ProjectName}-ALBDNSName" }
+    HostedZoneId: { "Fn::ImportValue": !Sub "${ProjectName}-ALBCanonicalHostedZoneID" }
+   Comment: ""
+   HostedZoneName: !Ref DomainName
+   Name: !Join [ "", [!Ref ProjectName, ".", !Ref DomainName]]

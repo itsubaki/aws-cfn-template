@@ -1,0 +1,10 @@
+template:
+  - template/vpc.yaml
+  - template/sg.yaml
+  - template/s3.yaml
+  - template/elb.yaml
+  - template/ec2.yaml
+vars:
+  ProjectName: test-project
+  KeyPair:
+  CertificateArn:
