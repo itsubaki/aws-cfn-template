@@ -5,6 +5,6 @@ template:
   - template/elb.yaml
   - template/ec2.yaml
 vars:
-  ProjectName: test-project
-  KeyPair:
+  ProjectName: myproject
+  KeyPair: mykeypair
   CertificateArn:
