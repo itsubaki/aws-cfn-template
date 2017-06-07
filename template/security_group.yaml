@@ -12,10 +12,14 @@ Parameters:
 Outputs:
  ProjectName:
   Value: !Ref ProjectName
- InternetSecurityGroup:
+ FrontendSecurityGroup:
   Value: !Ref FrontendSecurityGroup
   Export:
    Name: !Sub "${ProjectName}-FrontendSecurityGroup"
+ BackendSecurityGroup:
+  Value: !Ref BackendSecurityGroup
+  Export:
+   Name: !Sub "${ProjectName}-BackendSecurityGroup"
 
 Resources:
  FrontendSecurityGroup:

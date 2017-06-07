@@ -103,6 +103,7 @@ Resources:
    VpcId: !Ref VPC
    CidrBlock: !Ref CidrBlockPublicSubnetA
    AvailabilityZone: !Select [ "0", !GetAZs ""]
+   MapPublicIpOnLaunch: true
    Tags:
     - Key: Name
       Value: !Sub "${ProjectName}"
@@ -118,6 +119,7 @@ Resources:
    VpcId: !Ref VPC
    CidrBlock: !Ref CidrBlockPublicSubnetC
    AvailabilityZone: !Select [ "1", !GetAZs ""]
+   MapPublicIpOnLaunch: true
    Tags:
     - Key: Name
       Value: !Sub "${ProjectName}"

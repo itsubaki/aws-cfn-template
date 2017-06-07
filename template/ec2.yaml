@@ -47,12 +47,13 @@ Resources:
        VolumeType: "gp2"
    SecurityGroups:
     - { "Fn::ImportValue": !Sub "${ProjectName}-FrontendSecurityGroup" }
-#   UserData:
-#     Fn::Base64: !Sub
-#      - |+
-#        #!/bin/bash
-#        yum update -y
-#        /opt/aws/bin/cfn-signal -e 0 --stack ${AWS::StackName} --region ${AWS::Region} --resource AutoScalingGroup
+   UserData:
+    Fn::Base64: |
+     #!/bin/sh
+     sudo apt-get update
+     sudo apt-get install -y nginx
+     sudo service nginx start
+#     /opt/aws/bin/cfn-signal -e 0 --stack ${AWS::StackName} --region ${AWS::Region} --resource AutoScalingGroup
 
  AutoScalingGroup:
   Type: AWS::AutoScaling::AutoScalingGroup
@@ -61,16 +62,17 @@ Resources:
 #    Timeout: "PT10M"
   Properties:
    LaunchConfigurationName: !Ref LaunchConfiguration
+   TargetGroupARNs:
+    - { "Fn::ImportValue": !Sub "${ProjectName}-ApplicationLoadBalancerTargetGroup"}
    DesiredCapacity: !Ref InstanceNum
    MaxSize: !Ref InstanceNum
    MinSize: !Ref InstanceNum
-#   LoadBalancerNames:
-#    - !Sub "${ProjectName}-FrontendSecurityGroup"
-#   AvailabilityZones:
-#    - !Select [ "0", !GetAZs ""]
-#    - !Select [ "1", !GetAZs ""]
    VPCZoneIdentifier:
-    - { "Fn::ImportValue": !Sub "${ProjectName}-PrivateSubnetA"}
-    - { "Fn::ImportValue": !Sub "${ProjectName}-PrivateSubnetC"}
+    - { "Fn::ImportValue": !Sub "${ProjectName}-PublicSubnetA"}
+    - { "Fn::ImportValue": !Sub "${ProjectName}-PublicSubnetC"}
    HealthCheckType: "EC2"
    HealthCheckGracePeriod: 60
+   Tags:
+    - Key: Name
+      Value: !Sub "${ProjectName}"
+      PropagateAtLaunch: true

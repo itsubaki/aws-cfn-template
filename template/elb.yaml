@@ -9,9 +9,22 @@ Parameters:
   Type: String
   Default: Dev
 
- DomainName:
+Outputs:
+ ApplicationLoadBalancerTargetGroup:
   Description: ""
-  Type: String
+  Value: !Ref ApplicationLoadBalancerTargetGroup
+  Export:
+   Name: !Sub "${ProjectName}-ApplicationLoadBalancerTargetGroup"
+ ApplicationLoadBalancerDNSName:
+  Description: ""
+  Value: !GetAtt ApplicationLoadBalancer.DNSName
+  Export:
+   Name: !Sub "${ProjectName}-ALBDNSName"
+ ApplicationLoadBalancerCanonicalHostedZoneID:
+  Description: ""
+  Value: !GetAtt ApplicationLoadBalancer.CanonicalHostedZoneID
+  Export:
+   Name: !Sub "${ProjectName}-ALBCanonicalHostedZoneID"
 
 Resources:
  ApplicationLoadBalancer:
@@ -19,13 +32,13 @@ Resources:
   Properties:
    Scheme: internet-facing
    SecurityGroups:
-    - !Ref InternetSecurityGroup
+    - { "Fn::ImportValue": !Sub "${ProjectName}-FrontendSecurityGroup" }
    Subnets:
-    - !Ref PublicSubnetA
-    - !Ref PublicSubnetC
+    - { "Fn::ImportValue": !Sub "${ProjectName}-PublicSubnetA" }
+    - { "Fn::ImportValue": !Sub "${ProjectName}-PublicSubnetC" }
    Tags:
     - Key: Name
-      Value: !Sub "ApplicationLoadBalancer-${ProjectName}"
+      Value: !Sub "${ProjectName}"
 
  ApplicationLoadBalancerListener:
   Type: AWS::ElasticLoadBalancingV2::Listener
@@ -42,15 +55,7 @@ Resources:
   Properties:
    Port: "80"
    Protocol: "HTTP"
-   VpcId: !Ref VPC
-
- Route53DNSRecord:
-  Type: AWS::Route53::RecordSet
-  Properties:
-   Type: A
-   AliasTaret:
-    DNSName: !GetAtt ApplicationLoadBalancer.DNSName
-    HostedZoneId: !GetAtt ApplicationLoadBalancer.CanonicalHostedZoneID
-   Comment: ""
-   HostedZoneName: !Join [ "", [!Ref DomainName, "."]]
-   Name: !Join [ "", [!Ref ProjectName, ".", !Ref DomainName, "."]]
+   VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-VPC" }
+   Tags:
+    - Key: Name
+      Value: !Sub "${ProjectName}"
