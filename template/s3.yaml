@@ -9,6 +9,12 @@ Parameters:
   Type: String
 
 Outputs:
+ S3BucketStaging:
+  Description: ""
+  Value: !Ref S3BucketStaging
+  Export:
+   Name: !Sub "${ProjectName}-S3BucketStaging"
+
  S3Bucket:
   Description: ""
   Value: !Ref S3Bucket
@@ -22,6 +28,14 @@ Outputs:
    Name: !Sub "${ProjectName}-S3Endpoint"
 
 Resources:
+ S3BucketStaging:
+  Type: AWS::S3::Bucket
+  Properties:
+   BucketName: !Sub "${ProjectName}.staging"
+   Tags:
+    - Key: Name
+      Value: !Sub "${ProjectName}.staging"
+
  S3Bucket:
   Type: AWS::S3::Bucket
   Properties:
