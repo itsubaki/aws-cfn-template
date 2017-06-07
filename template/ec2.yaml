@@ -30,8 +30,7 @@ Parameters:
 
  KeyPair:
   Description: ""
-  Type: String
-  Default: "keypair"
+  Type: AWS::EC2::KeyPair::KeyName
 
 Resources:
  LaunchConfiguration:
