@@ -14,18 +14,18 @@ Outputs:
  FrontendSecurityGroup:
   Value: !Ref FrontendSecurityGroup
   Export:
-   Name: !Sub "${ProjectName}-FrontendSecurityGroup"
+   Name: !Sub "${ProjectName}-sg-frontend"
  BackendSecurityGroup:
   Value: !Ref BackendSecurityGroup
   Export:
-   Name: !Sub "${ProjectName}-BackendSecurityGroup"
+   Name: !Sub "${ProjectName}-sg-backend"
 
 Resources:
  FrontendSecurityGroup:
   Type: AWS::EC2::SecurityGroup
   Properties:
    GroupDescription: "Frontend SecurityGroup"
-   VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-VPC" }
+   VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-vpc" }
    SecurityGroupIngress:
     - CidrIp: "0.0.0.0/0"
       IpProtocol: "tcp"
@@ -41,13 +41,15 @@ Resources:
       ToPort: "22"
    Tags:
     - Key: Name
-      Value: !Sub "${ProjectName}-Frontend"
+      Value: !Sub "${ProjectName}-sg-frontend"
+    - Key: ProjectName
+      Value: !Ref ProjectName
 
  BackendSecurityGroup:
   Type: AWS::EC2::SecurityGroup
   Properties:
    GroupDescription: "Backend SecurityGroup"
-   VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-VPC" }
+   VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-vpc" }
    SecurityGroupIngress:
      - SourceSecurityGroupId: !Ref FrontendSecurityGroup
        IpProtocol: "-1"
@@ -55,4 +57,6 @@ Resources:
        ToPort: "-1"
    Tags:
     - Key: Name
-      Value: !Sub "${ProjectName}-Backend"
+      Value: !Sub "${ProjectName}-sg-backend"
+    - Key: ProjectName
+      Value: !Ref ProjectName

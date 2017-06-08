@@ -8,9 +8,9 @@ Parameters:
   Description: ""
   Type: String
 
- CertificateArn:
-  Description: ""
-  Type: String
+# CertificateArn:
+#  Description: ""
+#  Type: String
 
 Outputs:
  ApplicationLoadBalancerTargetGroup:
@@ -53,17 +53,17 @@ Resources:
     - TargetGroupArn: !Ref ApplicationLoadBalancerTargetGroup
       Type: forward
 
- ApplicationLoadBalancerListenerSSL:
-  Type: AWS::ElasticLoadBalancingV2::Listener
-  Properties:
-   LoadBalancerArn: !Ref ApplicationLoadBalancer
-   Port: "443"
-   Protocol: "HTTPS"
-   Certificates:
-    - CertificateArn: !Ref CertificateArn
-   DefaultActions:
-    - TargetGroupArn: !Ref ApplicationLoadBalancerTargetGroup
-      Type: forward
+# ApplicationLoadBalancerListenerSSL:
+#  Type: AWS::ElasticLoadBalancingV2::Listener
+#  Properties:
+#   LoadBalancerArn: !Ref ApplicationLoadBalancer
+#   Port: "443"
+#   Protocol: "HTTPS"
+#   Certificates:
+#    - CertificateArn: !Ref CertificateArn
+#   DefaultActions:
+#    - TargetGroupArn: !Ref ApplicationLoadBalancerTargetGroup
+#      Type: forward
 
  ApplicationLoadBalancerTargetGroup:
   Type: AWS::ElasticLoadBalancingV2::TargetGroup

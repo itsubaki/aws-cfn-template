@@ -41,31 +41,31 @@ Outputs:
  VPC:
    Value: !Ref VPC
    Export:
-    Name: !Sub "${ProjectName}-VPC"
+    Name: !Sub "${ProjectName}-vpc"
  PublicRouteTable:
    Value: !Ref PublicRouteTable
    Export:
-    Name: !Sub "${ProjectName}-PublicRouteTable"
+    Name: !Sub "${ProjectName}-rt-public"
  PrivateRouteTable:
    Value: !Ref PrivateRouteTable
    Export:
-    Name: !Sub "${ProjectName}-PrivateRouteTable"
+    Name: !Sub "${ProjectName}-rt-private"
  PublicSubnetA:
    Value: !Ref PublicSubnetA
    Export:
-    Name: !Sub "${ProjectName}-PublicSubnetA"
+    Name: !Sub "${ProjectName}-subneta-public"
  PublicSubnetC:
    Value: !Ref PublicSubnetC
    Export:
-    Name: !Sub "${ProjectName}-PublicSubnetC"
+    Name: !Sub "${ProjectName}-subnetc-public"
  PrivateSubnetA:
    Value: !Ref PrivateSubnetA
    Export:
-    Name: !Sub "${ProjectName}-PrivateSubnetA"
+    Name: !Sub "${ProjectName}-subneta-private"
  PrivateSubnetC:
    Value: !Ref PrivateSubnetC
    Export:
-    Name: !Sub "${ProjectName}-PrivateSubnetC"
+    Name: !Sub "${ProjectName}-subnetc-private"
 
 
 Resources:
@@ -78,7 +78,9 @@ Resources:
    InstanceTenancy: default
    Tags:
     - Key: Name
-      Value: !Sub "${ProjectName}"
+      Value: !Sub "${ProjectName}-vpc"
+    - Key: ProjectName
+      Value: !Ref ProjectName
 
  PublicRouteTable:
   Type: AWS::EC2::RouteTable
@@ -86,7 +88,9 @@ Resources:
    VpcId: !Ref VPC
    Tags:
     - Key: Name
-      Value: !Sub "${ProjectName}"
+      Value: !Sub "${ProjectName}-rt-public"
+    - Key: ProjectName
+      Value: !Ref ProjectName
 
  PrivateRouteTable:
   Type: AWS::EC2::RouteTable
@@ -94,7 +98,9 @@ Resources:
    VpcId: !Ref VPC
    Tags:
     - Key: Name
-      Value: !Sub "${ProjectName}"
+      Value: !Sub "${ProjectName}-rt-private"
+    - Key: ProjectName
+      Value: !Ref ProjectName
 
  PublicSubnetA:
   Type: AWS::EC2::Subnet
@@ -105,7 +111,10 @@ Resources:
    MapPublicIpOnLaunch: true
    Tags:
     - Key: Name
-      Value: !Sub "${ProjectName}"
+      Value: !Sub "${ProjectName}-subneta-public"
+    - Key: ProjectName
+      Value: !Ref ProjectName
+
  PublicSubnetARouteTableAssociation:
   Type: AWS::EC2::SubnetRouteTableAssociation
   Properties:
@@ -117,11 +126,14 @@ Resources:
   Properties:
    VpcId: !Ref VPC
    CidrBlock: !Ref CidrBlockPublicSubnetC
-   AvailabilityZone: !Select [ "1", !GetAZs ""]
+   AvailabilityZone: !Select [ "2", !GetAZs ""]
    MapPublicIpOnLaunch: true
    Tags:
     - Key: Name
-      Value: !Sub "${ProjectName}"
+      Value: !Sub "${ProjectName}-subnetc-public"
+    - Key: ProjectName
+      Value: !Ref ProjectName
+
  PublicSubnetCRouteTableAssociation:
   Type: AWS::EC2::SubnetRouteTableAssociation
   Properties:
@@ -136,7 +148,10 @@ Resources:
    AvailabilityZone: !Select [ "0", !GetAZs ""]
    Tags:
     - Key: Name
-      Value: !Sub "${ProjectName}"
+      Value: !Sub "${ProjectName}-subneta-private"
+    - Key: ProjectName
+      Value: !Ref ProjectName
+
  PrivateSubnetARouteTableAssociation:
   Type: AWS::EC2::SubnetRouteTableAssociation
   Properties:
@@ -148,10 +163,13 @@ Resources:
   Properties:
    VpcId: !Ref VPC
    CidrBlock: !Ref CidrBlockPrivateSubnetC
-   AvailabilityZone: !Select [ "1", !GetAZs ""]
+   AvailabilityZone: !Select [ "2", !GetAZs ""]
    Tags:
     - Key: Name
-      Value: !Sub "${ProjectName}"
+      Value: !Sub "${ProjectName}-subnetc-private"
+    - Key: ProjectName
+      Value: !Ref ProjectName
+
  PrivateSubnetCRouteTableAssociation:
   Type: AWS::EC2::SubnetRouteTableAssociation
   Properties:
@@ -163,7 +181,9 @@ Resources:
   Properties:
    Tags:
     - Key: Name
-      Value: !Sub "${ProjectName}"
+      Value: !Sub "${ProjectName}.igw"
+    - Key: ProjectName
+      Value: !Ref ProjectName
 
  AttachGateway:
   Type: AWS::EC2::VPCGatewayAttachment
