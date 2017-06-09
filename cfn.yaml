@@ -1,10 +1,6 @@
-template:
+Templates:
   - template/vpc.yaml
+  - template/subnet.yaml
   - template/sg.yaml
-  - template/s3.yaml
-  - template/elb.yaml
-  - template/ec2.yaml
-parameters:
-  ProjectName: myproject
-  KeyPair: mykeypair
-  CertificateArn:
+Parameters:
+  - ProjectName: test

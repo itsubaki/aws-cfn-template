@@ -7,31 +7,12 @@ Parameters:
  ProjectName:
   Description: ""
   Type: String
+  Default: test
 
  CidrBlockVPC:
   Description: ""
   Type: String
   Default: 10.0.0.0/16
-
- CidrBlockPublicSubnetA:
-  Description: ""
-  Type: String
-  Default: 10.0.0.0/27
-
- CidrBlockPublicSubnetC:
-  Description: ""
-  Type: String
-  Default: 10.0.0.32/27
-
- CidrBlockPrivateSubnetA:
-  Description: ""
-  Type: String
-  Default: 10.0.0.64/27
-
- CidrBlockPrivateSubnetC:
-  Description: ""
-  Type: String
-  Default: 10.0.0.96/27
 
 Outputs:
  ProjectName:
@@ -41,31 +22,15 @@ Outputs:
  VPC:
    Value: !Ref VPC
    Export:
-    Name: !Sub "${ProjectName}-vpc"
+    Name: !Sub "${ProjectName}-VPC"
  PublicRouteTable:
    Value: !Ref PublicRouteTable
    Export:
-    Name: !Sub "${ProjectName}-rt-public"
+    Name: !Sub "${ProjectName}-PublicRouteTable"
  PrivateRouteTable:
    Value: !Ref PrivateRouteTable
    Export:
-    Name: !Sub "${ProjectName}-rt-private"
- PublicSubnetA:
-   Value: !Ref PublicSubnetA
-   Export:
-    Name: !Sub "${ProjectName}-subneta-public"
- PublicSubnetC:
-   Value: !Ref PublicSubnetC
-   Export:
-    Name: !Sub "${ProjectName}-subnetc-public"
- PrivateSubnetA:
-   Value: !Ref PrivateSubnetA
-   Export:
-    Name: !Sub "${ProjectName}-subneta-private"
- PrivateSubnetC:
-   Value: !Ref PrivateSubnetC
-   Export:
-    Name: !Sub "${ProjectName}-subnetc-private"
+    Name: !Sub "${ProjectName}-PrivateRouteTable"
 
 
 Resources:
@@ -78,7 +43,7 @@ Resources:
    InstanceTenancy: default
    Tags:
     - Key: Name
-      Value: !Sub "${ProjectName}-vpc"
+      Value: !Sub "${ProjectName}.vpc"
     - Key: ProjectName
       Value: !Ref ProjectName
 
@@ -88,9 +53,11 @@ Resources:
    VpcId: !Ref VPC
    Tags:
     - Key: Name
-      Value: !Sub "${ProjectName}-rt-public"
+      Value: !Sub "${ProjectName}.route-table.public"
     - Key: ProjectName
       Value: !Ref ProjectName
+    - Key: NetworkSegment
+      Value: public
 
  PrivateRouteTable:
   Type: AWS::EC2::RouteTable
@@ -98,90 +65,18 @@ Resources:
    VpcId: !Ref VPC
    Tags:
     - Key: Name
-      Value: !Sub "${ProjectName}-rt-private"
+      Value: !Sub "${ProjectName}.route-table.private"
     - Key: ProjectName
       Value: !Ref ProjectName
-
- PublicSubnetA:
-  Type: AWS::EC2::Subnet
-  Properties:
-   VpcId: !Ref VPC
-   CidrBlock: !Ref CidrBlockPublicSubnetA
-   AvailabilityZone: !Select [ "0", !GetAZs ""]
-   MapPublicIpOnLaunch: true
-   Tags:
-    - Key: Name
-      Value: !Sub "${ProjectName}-subneta-public"
-    - Key: ProjectName
-      Value: !Ref ProjectName
-
- PublicSubnetARouteTableAssociation:
-  Type: AWS::EC2::SubnetRouteTableAssociation
-  Properties:
-   SubnetId: !Ref PublicSubnetA
-   RouteTableId: !Ref PublicRouteTable
-
- PublicSubnetC:
-  Type: AWS::EC2::Subnet
-  Properties:
-   VpcId: !Ref VPC
-   CidrBlock: !Ref CidrBlockPublicSubnetC
-   AvailabilityZone: !Select [ "2", !GetAZs ""]
-   MapPublicIpOnLaunch: true
-   Tags:
-    - Key: Name
-      Value: !Sub "${ProjectName}-subnetc-public"
-    - Key: ProjectName
-      Value: !Ref ProjectName
-
- PublicSubnetCRouteTableAssociation:
-  Type: AWS::EC2::SubnetRouteTableAssociation
-  Properties:
-   SubnetId: !Ref PublicSubnetC
-   RouteTableId: !Ref PublicRouteTable
-
- PrivateSubnetA:
-  Type: AWS::EC2::Subnet
-  Properties:
-   VpcId: !Ref VPC
-   CidrBlock: !Ref CidrBlockPrivateSubnetA
-   AvailabilityZone: !Select [ "0", !GetAZs ""]
-   Tags:
-    - Key: Name
-      Value: !Sub "${ProjectName}-subneta-private"
-    - Key: ProjectName
-      Value: !Ref ProjectName
-
- PrivateSubnetARouteTableAssociation:
-  Type: AWS::EC2::SubnetRouteTableAssociation
-  Properties:
-   SubnetId: !Ref PrivateSubnetA
-   RouteTableId: !Ref PrivateRouteTable
-
- PrivateSubnetC:
-  Type: AWS::EC2::Subnet
-  Properties:
-   VpcId: !Ref VPC
-   CidrBlock: !Ref CidrBlockPrivateSubnetC
-   AvailabilityZone: !Select [ "2", !GetAZs ""]
-   Tags:
-    - Key: Name
-      Value: !Sub "${ProjectName}-subnetc-private"
-    - Key: ProjectName
-      Value: !Ref ProjectName
-
- PrivateSubnetCRouteTableAssociation:
-  Type: AWS::EC2::SubnetRouteTableAssociation
-  Properties:
-   SubnetId: !Ref PrivateSubnetC
-   RouteTableId: !Ref PrivateRouteTable
+    - Key: NetworkSegment
+      Value: private
 
  InternetGateway:
   Type: AWS::EC2::InternetGateway
   Properties:
    Tags:
     - Key: Name
-      Value: !Sub "${ProjectName}.igw"
+      Value: !Sub "${ProjectName}.internet-gateway"
     - Key: ProjectName
       Value: !Ref ProjectName
 

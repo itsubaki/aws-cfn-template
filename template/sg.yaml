@@ -7,25 +7,26 @@ Parameters:
  ProjectName:
   Description: ""
   Type: String
+  Default: test
 
 Outputs:
  ProjectName:
   Value: !Ref ProjectName
- FrontendSecurityGroup:
-  Value: !Ref FrontendSecurityGroup
+ PublicSecurityGroup:
+  Value: !Ref PublicSecurityGroup
   Export:
-   Name: !Sub "${ProjectName}-sg-frontend"
- BackendSecurityGroup:
-  Value: !Ref BackendSecurityGroup
+   Name: !Sub "${ProjectName}-PublicSecurityGroup"
+ PrivateSecurityGroup:
+  Value: !Ref PrivateSecurityGroup
   Export:
-   Name: !Sub "${ProjectName}-sg-backend"
+   Name: !Sub "${ProjectName}-PrivateSecurityGroup"
 
 Resources:
- FrontendSecurityGroup:
+ PublicSecurityGroup:
   Type: AWS::EC2::SecurityGroup
   Properties:
-   GroupDescription: "Frontend SecurityGroup"
-   VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-vpc" }
+   GroupDescription: "PublicSecurityGroup"
+   VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-VPC" }
    SecurityGroupIngress:
     - CidrIp: "0.0.0.0/0"
       IpProtocol: "tcp"
@@ -41,22 +42,26 @@ Resources:
       ToPort: "22"
    Tags:
     - Key: Name
-      Value: !Sub "${ProjectName}-sg-frontend"
+      Value: !Sub "${ProjectName}.security-group.public"
     - Key: ProjectName
       Value: !Ref ProjectName
+    - Key: NetworkSegment
+      Value: public
 
- BackendSecurityGroup:
+ PrivateSecurityGroup:
   Type: AWS::EC2::SecurityGroup
   Properties:
-   GroupDescription: "Backend SecurityGroup"
-   VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-vpc" }
+   GroupDescription: "PrivateSecurityGroup"
+   VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-VPC" }
    SecurityGroupIngress:
-     - SourceSecurityGroupId: !Ref FrontendSecurityGroup
+     - SourceSecurityGroupId: !Ref PublicSecurityGroup
        IpProtocol: "-1"
        FromPort: "-1"
        ToPort: "-1"
    Tags:
     - Key: Name
-      Value: !Sub "${ProjectName}-sg-backend"
+      Value: !Sub "${ProjectName}.security-group.private"
     - Key: ProjectName
       Value: !Ref ProjectName
+    - Key: NetworkSegment
+      Value: private

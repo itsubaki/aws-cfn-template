@@ -13,19 +13,19 @@ Outputs:
   Description: ""
   Value: !Ref S3BucketStaging
   Export:
-   Name: !Sub "${ProjectName}-s3bucket-staging"
+   Name: !Sub "${ProjectName}-S3BucketStaging"
 
  S3Bucket:
   Description: ""
   Value: !Ref S3Bucket
   Export:
-   Name: !Sub "${ProjectName}-s3bucket"
+   Name: !Sub "${ProjectName}-S3Bucket"
 
  S3Endpoint:
   Description: ""
   Value: !Ref S3Endpoint
   Export:
-   Name: !Sub "${ProjectName}-s3endpoint"
+   Name: !Sub "${ProjectName}-S3Endpoint"
 
 Resources:
  S3BucketStaging:
@@ -34,7 +34,7 @@ Resources:
    BucketName: !Sub "${ProjectName}-staging"
    Tags:
     - Key: Name
-      Value: !Sub "${ProjectName}-s3bucket-staging"
+      Value: !Sub "${ProjectName}.s3bucket.staging"
     - Key: ProjectName
       Value: !Ref ProjectName
 
@@ -44,15 +44,15 @@ Resources:
    BucketName: !Ref ProjectName
    Tags:
     - Key: Name
-      Value: !Sub "${ProjectName}-s3bucket"
+      Value: !Sub "${ProjectName}.s3bucket"
     - Key: ProjectName
       Value: !Ref ProjectName
 
  S3Endpoint:
   Type: AWS::EC2::VPCEndpoint
   Properties:
-   VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-vpc" }
+   VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-VPC" }
    ServiceName: !Sub "com.amazonaws.${AWS::Region}.s3"
    RouteTableIds:
-    - { "Fn::ImportValue": !Sub "${ProjectName}-rt-public" }
-    - { "Fn::ImportValue": !Sub "${ProjectName}-rt-private" }
+    - { "Fn::ImportValue": !Sub "${ProjectName}-PublicRouteTable" }
+    - { "Fn::ImportValue": !Sub "${ProjectName}-PrivateRouteTable" }

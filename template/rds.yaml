@@ -70,7 +70,7 @@ Resources:
    DBSubnetGroupName: !Ref DBSubnetGroup
    DBClusterParameterGroupName: !Ref DBClusterParameterGroup
    VpcSecurityGroupIds:
-    - { "Fn::ImportValue": !Sub "${ProjectName}-BackendSecurityGroup"}
+    - { "Fn::ImportValue": !Sub "${ProjectName}-PrivateSecurityGroup"}
 
  DBInstanceA:
   Type: AWS::RDS::DBInstance
@@ -85,7 +85,7 @@ Resources:
   Type: AWS::RDS::DBInstance
   Properties:
    Engine: "aurora"
-   AvailabilityZone: !Select [ "1", !GetAZs ""]
+   AvailabilityZone: !Select [ "2", !GetAZs ""]
    DBSubnetGroupName: !Ref DBSubnetGroup
    DBClusterIdentifier: !Ref DBCluster
    DBInstanceClass: !Ref DBInstanceClass

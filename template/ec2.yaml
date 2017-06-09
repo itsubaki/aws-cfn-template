@@ -45,7 +45,7 @@ Resources:
        DeleteOnTermination: true
        VolumeType: "gp2"
    SecurityGroups:
-    - { "Fn::ImportValue": !Sub "${ProjectName}-FrontendSecurityGroup" }
+    - { "Fn::ImportValue": !Sub "${ProjectName}-PublicSecurityGroup" }
    UserData:
     Fn::Base64: |
      #!/bin/sh
@@ -73,5 +73,8 @@ Resources:
    HealthCheckGracePeriod: 60
    Tags:
     - Key: Name
-      Value: !Sub "${ProjectName}"
+      Value: !Sub "${ProjectName}.ec2"
+      PropagateAtLaunch: true
+    - Key: ProjectName
+      Value: !Ref ProjectName
       PropagateAtLaunch: true

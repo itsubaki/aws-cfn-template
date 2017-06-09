@@ -35,13 +35,15 @@ Resources:
   Properties:
    Scheme: internet-facing
    SecurityGroups:
-    - { "Fn::ImportValue": !Sub "${ProjectName}-FrontendSecurityGroup" }
+    - { "Fn::ImportValue": !Sub "${ProjectName}-PublicSecurityGroup" }
    Subnets:
     - { "Fn::ImportValue": !Sub "${ProjectName}-PublicSubnetA" }
     - { "Fn::ImportValue": !Sub "${ProjectName}-PublicSubnetC" }
    Tags:
     - Key: Name
-      Value: !Sub "${ProjectName}"
+      Value: !Sub "${ProjectName}.loadbalancer.public"
+    - Key: ProjectName
+      Value: !Ref ProjectName
 
  ApplicationLoadBalancerListener:
   Type: AWS::ElasticLoadBalancingV2::Listener
@@ -73,4 +75,6 @@ Resources:
    VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-VPC" }
    Tags:
     - Key: Name
-      Value: !Sub "${ProjectName}"
+      Value: !Sub "${ProjectName}.target-group"
+    - Key: ProjectName
+      Value: !Ref ProjectName
