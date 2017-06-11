@@ -4,3 +4,5 @@ Templates:
   - template/sg.yaml
 Parameters:
   - ProjectName: test
+Tags:
+  - ProjectName: test

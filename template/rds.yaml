@@ -1,91 +1,94 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
 Description:
- AWS RDS(Aurora) Resource
+  AWS RDS(Aurora) Resource
 
 Parameters:
- ProjectName:
-  Description: ""
-  Type: String
-
- MasterUsername:
-  Description: ""
-  Type: String
-
- MasterUserPassword:
-  Description: ""
-  Type: String
-
- DBInstanceClass:
-  Description: ""
-  Type: String
-  Default: "db.t2.medium"
-  AllowedValues:
-   - db.t2.medium
-   - db.r3.large
-   - db.r3.xlarge
-   - db.r3.2xlarge
-   - db.r3.4xlarge
-   - db.r3.8xlarge
+  ProjectName:
+    Description: ""
+    Type: String
+  MasterUsername:
+    Description: ""
+    Type: String
+  MasterUserPassword:
+    Description: ""
+    Type: String
+  DBInstanceClass:
+    Description: ""
+    Type: String
+    Default: "db.t2.medium"
+    AllowedValues:
+      - db.t2.medium
+      - db.r3.large
+      - db.r3.xlarge
+      - db.r3.2xlarge
+      - db.r3.4xlarge
+      - db.r3.8xlarge
 
 Outputs:
- DBCluster:
-  Description: ""
-  Value: !Ref DBCluster
-
- DBClusterEndpointURL:
-  Description: ""
-  Value: !GetAtt DBCluster.Endpoint.Address
-
- DBClusterEndpointPort:
-  Descirption: ""
-  Value: !GetAtt DBCluster.Endpoint.Port
+  ProjectName:
+    Value: !Ref ProjectName
+  DBCluster:
+    Description: ""
+    Value: !Ref DBCluster
+    Export:
+      Name: !Sub "${ProjectName}-DBCluster"
+  DBClusterEndpointAddress:
+    Description: ""
+    Value: !GetAtt DBCluster.Endpoint.Address
+    Export:
+      Name: !Sub "${ProjectName}-DBClusterEndpointAddress"
+  DBClusterEndpointPort:
+    Descirption: ""
+    Value: !GetAtt DBCluster.Endpoint.Port
+    Export:
+      Name: !Sub "${ProjectName}-DBClusterEndpointPort"
 
 Resources:
- DBSubnetGroup:
-  Type: AWS::RDS::DBSubnetGroup
-  Properties:
-   DBSubnetGroupDescription: "Multi-AZ"
-   SubnetIds:
-    - { "Fn::ImportValue": !Sub "${ProjectName}-PrivateSubnetA" }
-    - { "Fn::ImportValue": !Sub "${ProjectName}-PrivateSubnetC" }
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: "Multi-AZ"
+      SubnetIds:
+        - { "Fn::ImportValue": !Sub "${ProjectName}-PrivateSubnetA" }
+        - { "Fn::ImportValue": !Sub "${ProjectName}-PrivateSubnetC" }
 
- DBClusterParameterGroup:
-  Type: AWS::RDS:DBClusterParameterGroup
-  Properties:
-   Parameters:
-    character_set_database: "utf8"
-   Family: "aurora5.6"
-   Description: ""
+  DBClusterParameterGroup:
+    Type: AWS::RDS:DBClusterParameterGroup
+    Properties:
+      Parameters:
+        character_set_database: "utf8"
+        Family: "aurora5.6"
+        Description: ""
 
- DBCluster:
-  Type: AWS::RDS::DBCluster
-  Properties:
-   Engine: "aurora"
-   AvailabilityZones:
-    - !Select [ "0", !GetAZs ""]
-    - !Select [ "1", !GetAZs ""]
-   MasterUsername: !Ref MasterUsername
-   MasterUserPassword: !Ref MasterUserPassword
-   DBSubnetGroupName: !Ref DBSubnetGroup
-   DBClusterParameterGroupName: !Ref DBClusterParameterGroup
-   VpcSecurityGroupIds:
-    - { "Fn::ImportValue": !Sub "${ProjectName}-PrivateSecurityGroup"}
+  DBCluster:
+    Type: AWS::RDS::DBCluster
+    Properties:
+      Engine: "aurora"
+      AvailabilityZones:
+        - !Select [ "0", !GetAZs ""]
+        - !Select [ "1", !GetAZs ""]
+      MasterUsername: !Ref MasterUsername
+      MasterUserPassword: !Ref MasterUserPassword
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      DBClusterParameterGroupName: !Ref DBClusterParameterGroup
+      VpcSecurityGroupIds:
+        - { "Fn::ImportValue": !Sub "${ProjectName}-PrivateSecurityGroup"}
 
- DBInstanceA:
-  Type: AWS::RDS::DBInstance
-  Properties:
-   Engine: "aurora"
-   AvailabilityZone: !Select [ "0", !GetAZs ""]
-   DBSubnetGroupName: !Ref DBSubnetGroup
-   DBClusterIdentifier: !Ref DBCluster
-   DBInstanceClass: !Ref DBInstanceClass
+  DBInstanceA:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      Engine: "aurora"
+      AvailabilityZone: !Select [ "0", !GetAZs ""]
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      DBClusterIdentifier: !Ref DBCluster
+      DBInstanceClass: !Ref DBInstanceClass
 
- DBInstanceC:
-  Type: AWS::RDS::DBInstance
-  Properties:
-   Engine: "aurora"
-   AvailabilityZone: !Select [ "2", !GetAZs ""]
-   DBSubnetGroupName: !Ref DBSubnetGroup
-   DBClusterIdentifier: !Ref DBCluster
-   DBInstanceClass: !Ref DBInstanceClass
+  DBInstanceC:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      Engine: "aurora"
+      AvailabilityZone: !Select [ "2", !GetAZs ""]
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      DBClusterIdentifier: !Ref DBCluster
+      DBInstanceClass: !Ref DBInstanceClass

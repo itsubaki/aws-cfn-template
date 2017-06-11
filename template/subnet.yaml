@@ -1,132 +1,129 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
 Description:
- AWS Subnet Resource
+  AWS Subnet Resource
 
 Parameters:
- ProjectName:
-  Description: ""
-  Type: String
-  Default: test
-
- CidrBlockPublicSubnetA:
-  Description: ""
-  Type: String
-  Default: 10.0.0.0/27
-
- CidrBlockPublicSubnetC:
-  Description: ""
-  Type: String
-  Default: 10.0.0.32/27
-
- CidrBlockPrivateSubnetA:
-  Description: ""
-  Type: String
-  Default: 10.0.0.64/27
-
- CidrBlockPrivateSubnetC:
-  Description: ""
-  Type: String
-  Default: 10.0.0.96/27
+  ProjectName:
+    Description: ""
+    Type: String
+    Default: test
+  CidrBlockPublicSubnetA:
+    Description: ""
+    Type: String
+    Default: 10.0.0.0/27
+  CidrBlockPublicSubnetC:
+    Description: ""
+    Type: String
+    Default: 10.0.0.32/27
+  CidrBlockPrivateSubnetA:
+    Description: ""
+    Type: String
+    Default: 10.0.0.64/27
+  CidrBlockPrivateSubnetC:
+    Description: ""
+    Type: String
+    Default: 10.0.0.96/27
 
 Outputs:
- PublicSubnetA:
-   Value: !Ref PublicSubnetA
-   Export:
-    Name: !Sub "${ProjectName}-PublicSubnetA"
- PublicSubnetC:
-   Value: !Ref PublicSubnetC
-   Export:
-    Name: !Sub "${ProjectName}-PublicSubnetC"
- PrivateSubnetA:
-   Value: !Ref PrivateSubnetA
-   Export:
-    Name: !Sub "${ProjectName}-PrivateSubnetA"
- PrivateSubnetC:
-   Value: !Ref PrivateSubnetC
-   Export:
-    Name: !Sub "${ProjectName}-PrivateSubnetC"
-
+  ProjectName:
+    Value: !Ref ProjectName
+  PublicSubnetA:
+    Value: !Ref PublicSubnetA
+    Export:
+      Name: !Sub "${ProjectName}-PublicSubnetA"
+  PublicSubnetC:
+    Value: !Ref PublicSubnetC
+    Export:
+      Name: !Sub "${ProjectName}-PublicSubnetC"
+  PrivateSubnetA:
+    Value: !Ref PrivateSubnetA
+    Export:
+      Name: !Sub "${ProjectName}-PrivateSubnetA"
+  PrivateSubnetC:
+    Value: !Ref PrivateSubnetC
+    Export:
+      Name: !Sub "${ProjectName}-PrivateSubnetC"
 
 Resources:
- PublicSubnetA:
-  Type: AWS::EC2::Subnet
-  Properties:
-   VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-VPC" }
-   CidrBlock: !Ref CidrBlockPublicSubnetA
-   AvailabilityZone: !Select [ "0", !GetAZs ""]
-   MapPublicIpOnLaunch: true
-   Tags:
-    - Key: Name
-      Value: !Sub "${ProjectName}.subnet-a.public"
-    - Key: ProjectName
-      Value: !Ref ProjectName
-    - Key: NetworkSegment
-      Value: public
+  PublicSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-VPC" }
+      CidrBlock: !Ref CidrBlockPublicSubnetA
+      AvailabilityZone: !Select [ "0", !GetAZs ""]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.subnet-a.public"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: NetworkSegment
+          Value: public
 
- PublicSubnetARouteTableAssociation:
-  Type: AWS::EC2::SubnetRouteTableAssociation
-  Properties:
-   SubnetId: !Ref PublicSubnetA
-   RouteTableId: { "Fn::ImportValue": !Sub "${ProjectName}-PublicRouteTable" }
+  PublicSubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetA
+      RouteTableId: { "Fn::ImportValue": !Sub "${ProjectName}-PublicRouteTable" }
 
- PublicSubnetC:
-  Type: AWS::EC2::Subnet
-  Properties:
-   VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-VPC" }
-   CidrBlock: !Ref CidrBlockPublicSubnetC
-   AvailabilityZone: !Select [ "2", !GetAZs ""]
-   MapPublicIpOnLaunch: true
-   Tags:
-    - Key: Name
-      Value: !Sub "${ProjectName}.subnet-c.public"
-    - Key: ProjectName
-      Value: !Ref ProjectName
-    - Key: NetworkSegment
-      Value: public
+  PublicSubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-VPC" }
+      CidrBlock: !Ref CidrBlockPublicSubnetC
+      AvailabilityZone: !Select [ "2", !GetAZs ""]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.subnet-c.public"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: NetworkSegment
+          Value: public
 
- PublicSubnetCRouteTableAssociation:
-  Type: AWS::EC2::SubnetRouteTableAssociation
-  Properties:
-   SubnetId: !Ref PublicSubnetC
-   RouteTableId: { "Fn::ImportValue": !Sub "${ProjectName}-PublicRouteTable" }
+  PublicSubnetCRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetC
+      RouteTableId: { "Fn::ImportValue": !Sub "${ProjectName}-PublicRouteTable" }
 
- PrivateSubnetA:
-  Type: AWS::EC2::Subnet
-  Properties:
-   VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-VPC" }
-   CidrBlock: !Ref CidrBlockPrivateSubnetA
-   AvailabilityZone: !Select [ "0", !GetAZs ""]
-   Tags:
-    - Key: Name
-      Value: !Sub "${ProjectName}.subnet-a.private"
-    - Key: ProjectName
-      Value: !Ref ProjectName
-    - Key: NetworkSegment
-      Value: private
+  PrivateSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-VPC" }
+      CidrBlock: !Ref CidrBlockPrivateSubnetA
+      AvailabilityZone: !Select [ "0", !GetAZs ""]
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.subnet-a.private"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: NetworkSegment
+          Value: private
 
- PrivateSubnetARouteTableAssociation:
-  Type: AWS::EC2::SubnetRouteTableAssociation
-  Properties:
-   SubnetId: !Ref PrivateSubnetA
-   RouteTableId: { "Fn::ImportValue": !Sub "${ProjectName}-PrivateRouteTable" }
+  PrivateSubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetA
+      RouteTableId: { "Fn::ImportValue": !Sub "${ProjectName}-PrivateRouteTable" }
 
- PrivateSubnetC:
-  Type: AWS::EC2::Subnet
-  Properties:
-   VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-VPC" }
-   CidrBlock: !Ref CidrBlockPrivateSubnetC
-   AvailabilityZone: !Select [ "2", !GetAZs ""]
-   Tags:
-    - Key: Name
-      Value: !Sub "${ProjectName}.subnet-c.private"
-    - Key: ProjectName
-      Value: !Ref ProjectName
-    - Key: NetworkSegment
-      Value: private
+  PrivateSubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-VPC" }
+      CidrBlock: !Ref CidrBlockPrivateSubnetC
+      AvailabilityZone: !Select [ "2", !GetAZs ""]
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.subnet-c.private"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: NetworkSegment
+          Value: private
 
- PrivateSubnetCRouteTableAssociation:
-  Type: AWS::EC2::SubnetRouteTableAssociation
-  Properties:
-   SubnetId: !Ref PrivateSubnetC
-   RouteTableId: { "Fn::ImportValue": !Sub "${ProjectName}-PrivateRouteTable" }
+  PrivateSubnetCRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetC
+      RouteTableId: { "Fn::ImportValue": !Sub "${ProjectName}-PrivateRouteTable" }

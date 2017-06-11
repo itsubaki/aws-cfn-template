@@ -1,58 +1,58 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
 Description:
- AWS S3 Resource
+  AWS S3 Resource
 
 Parameters:
- ProjectName:
-  Description: ""
-  Type: String
+  ProjectName:
+    Description: ""
+    Type: String
 
 Outputs:
- S3BucketStaging:
-  Description: ""
-  Value: !Ref S3BucketStaging
-  Export:
-   Name: !Sub "${ProjectName}-S3BucketStaging"
-
- S3Bucket:
-  Description: ""
-  Value: !Ref S3Bucket
-  Export:
-   Name: !Sub "${ProjectName}-S3Bucket"
-
- S3Endpoint:
-  Description: ""
-  Value: !Ref S3Endpoint
-  Export:
-   Name: !Sub "${ProjectName}-S3Endpoint"
+  ProjectName:
+    Value: !Ref ProjectName
+  S3BucketStaging:
+    Description: ""
+    Value: !Ref S3BucketStaging
+    Export:
+      Name: !Sub "${ProjectName}-S3BucketStaging"
+  S3Bucket:
+    Description: ""
+    Value: !Ref S3Bucket
+    Export:
+      Name: !Sub "${ProjectName}-S3Bucket"
+  S3Endpoint:
+    Description: ""
+    Value: !Ref S3Endpoint
+    Export:
+      Name: !Sub "${ProjectName}-S3Endpoint"
 
 Resources:
- S3BucketStaging:
-  Type: AWS::S3::Bucket
-  Properties:
-   BucketName: !Sub "${ProjectName}-staging"
-   Tags:
-    - Key: Name
-      Value: !Sub "${ProjectName}.s3bucket.staging"
-    - Key: ProjectName
-      Value: !Ref ProjectName
+  S3BucketStaging:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${ProjectName}-staging"
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.s3bucket.staging"
+        - Key: ProjectName
+          Value: !Ref ProjectName
 
- S3Bucket:
-  Type: AWS::S3::Bucket
-  Properties:
-   BucketName: !Ref ProjectName
-   Tags:
-    - Key: Name
-      Value: !Sub "${ProjectName}.s3bucket"
-    - Key: ProjectName
-      Value: !Ref ProjectName
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref ProjectName
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.s3bucket"
+        - Key: ProjectName
+          Value: !Ref ProjectName
 
- S3Endpoint:
-  Type: AWS::EC2::VPCEndpoint
-  Properties:
-   VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-VPC" }
-   ServiceName: !Sub "com.amazonaws.${AWS::Region}.s3"
-   RouteTableIds:
-    - { "Fn::ImportValue": !Sub "${ProjectName}-PublicRouteTable" }
-    - { "Fn::ImportValue": !Sub "${ProjectName}-PrivateRouteTable" }
+  S3Endpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-VPC" }
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.s3"
+      RouteTableIds:
+        - { "Fn::ImportValue": !Sub "${ProjectName}-PublicRouteTable" }
+        - { "Fn::ImportValue": !Sub "${ProjectName}-PrivateRouteTable" }

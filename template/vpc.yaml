@@ -1,94 +1,92 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
 Description:
- AWS VPC Resource
+  AWS VPC Resource
 
 Parameters:
- ProjectName:
-  Description: ""
-  Type: String
-  Default: test
-
- CidrBlockVPC:
-  Description: ""
-  Type: String
-  Default: 10.0.0.0/16
+  ProjectName:
+    Description: ""
+    Type: String
+    Default: test
+  CidrBlockVPC:
+    Description: ""
+    Type: String
+    Default: 10.0.0.0/16
 
 Outputs:
- ProjectName:
-  Value: !Ref ProjectName
-  Export:
-   Name: !Ref ProjectName
- VPC:
-   Value: !Ref VPC
-   Export:
-    Name: !Sub "${ProjectName}-VPC"
- PublicRouteTable:
-   Value: !Ref PublicRouteTable
-   Export:
-    Name: !Sub "${ProjectName}-PublicRouteTable"
- PrivateRouteTable:
-   Value: !Ref PrivateRouteTable
-   Export:
-    Name: !Sub "${ProjectName}-PrivateRouteTable"
-
+  ProjectName:
+    Value: !Ref ProjectName
+    Export:
+      Name: !Ref ProjectName
+  VPC:
+    Value: !Ref VPC
+    Export:
+      Name: !Sub "${ProjectName}-VPC"
+  PublicRouteTable:
+    Value: !Ref PublicRouteTable
+    Export:
+      Name: !Sub "${ProjectName}-PublicRouteTable"
+  PrivateRouteTable:
+    Value: !Ref PrivateRouteTable
+    Export:
+      Name: !Sub "${ProjectName}-PrivateRouteTable"
 
 Resources:
- VPC:
-  Type: AWS::EC2::VPC
-  Properties:
-   CidrBlock: !Ref CidrBlockVPC
-   EnableDnsSupport: "true"
-   EnableDnsHostnames: "true"
-   InstanceTenancy: default
-   Tags:
-    - Key: Name
-      Value: !Sub "${ProjectName}.vpc"
-    - Key: ProjectName
-      Value: !Ref ProjectName
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref CidrBlockVPC
+      EnableDnsSupport: "true"
+      EnableDnsHostnames: "true"
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.vpc"
+        - Key: ProjectName
+          Value: !Ref ProjectName
 
- PublicRouteTable:
-  Type: AWS::EC2::RouteTable
-  Properties:
-   VpcId: !Ref VPC
-   Tags:
-    - Key: Name
-      Value: !Sub "${ProjectName}.route-table.public"
-    - Key: ProjectName
-      Value: !Ref ProjectName
-    - Key: NetworkSegment
-      Value: public
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.route-table.public"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: NetworkSegment
+          Value: public
 
- PrivateRouteTable:
-  Type: AWS::EC2::RouteTable
-  Properties:
-   VpcId: !Ref VPC
-   Tags:
-    - Key: Name
-      Value: !Sub "${ProjectName}.route-table.private"
-    - Key: ProjectName
-      Value: !Ref ProjectName
-    - Key: NetworkSegment
-      Value: private
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.route-table.private"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: NetworkSegment
+          Value: private
 
- InternetGateway:
-  Type: AWS::EC2::InternetGateway
-  Properties:
-   Tags:
-    - Key: Name
-      Value: !Sub "${ProjectName}.internet-gateway"
-    - Key: ProjectName
-      Value: !Ref ProjectName
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.internet-gateway"
+        - Key: ProjectName
+          Value: !Ref ProjectName
 
- AttachGateway:
-  Type: AWS::EC2::VPCGatewayAttachment
-  Properties:
-   InternetGatewayId: !Ref InternetGateway
-   VpcId: !Ref VPC
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
 
- Route:
-  Type: AWS::EC2::Route
-  Properties:
-   RouteTableId: !Ref PublicRouteTable
-   DestinationCidrBlock: 0.0.0.0/0
-   GatewayId: !Ref InternetGateway
+  Route:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
