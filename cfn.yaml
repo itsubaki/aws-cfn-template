@@ -2,6 +2,7 @@ Templates:
   - template/vpc.yaml
   - template/subnet.yaml
   - template/sg.yaml
+#  - template/sg-update.yaml
 #  - template/s3.yaml
 #  - template/rds.yaml
 #  - template/elb.yaml
