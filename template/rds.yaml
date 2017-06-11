@@ -39,7 +39,7 @@ Outputs:
     Export:
       Name: !Sub "${ProjectName}-DBClusterEndpointAddress"
   DBClusterEndpointPort:
-    Descirption: ""
+    Description: ""
     Value: !GetAtt DBCluster.Endpoint.Port
     Export:
       Name: !Sub "${ProjectName}-DBClusterEndpointPort"
@@ -54,7 +54,7 @@ Resources:
         - { "Fn::ImportValue": !Sub "${ProjectName}-PrivateSubnetC" }
 
   DBClusterParameterGroup:
-    Type: AWS::RDS:DBClusterParameterGroup
+    Type: AWS::RDS::DBClusterParameterGroup
     Properties:
       Parameters:
         character_set_database: "utf8"

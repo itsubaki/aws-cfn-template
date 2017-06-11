@@ -44,10 +44,10 @@ Resources:
         - { "Fn::ImportValue": !Sub "${ProjectName}-PublicSecurityGroup" }
       UserData:
         Fn::Base64: |
-        #!/bin/sh
-        sudo apt-get update
-        sudo apt-get install -y nginx
-        sudo service nginx start
+          #!/bin/sh
+          sudo apt-get update
+          sudo apt-get install -y nginx
+          sudo service nginx start
 #     /opt/aws/bin/cfn-signal -e 0 --stack ${AWS::StackName} --region ${AWS::Region} --resource AutoScalingGroup
 
   AutoScalingGroup:

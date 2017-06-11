@@ -2,6 +2,11 @@ Templates:
   - template/vpc.yaml
   - template/subnet.yaml
   - template/sg.yaml
+#  - template/s3.yaml
+#  - template/rds.yaml
+#  - template/elb.yaml
+#  - template/ec2.yaml
+#  - template/r53.yaml
 Parameters:
   - ProjectName: test
 Tags:

@@ -12,12 +12,12 @@ Parameters:
     Type: String
 
 Outputs:
+  ProjectName:
+    Value: !Ref ProjectName
   HostName:
     Value: !Join [ "", [!Ref ProjectName, ".", !Ref DomainName]]
 
 Resources:
-  ProjectName:
-    Value: !Ref ProjectName
   Route53DNSRecord:
     Type: AWS::Route53::RecordSet
     Properties:
