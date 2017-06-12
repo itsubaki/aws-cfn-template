@@ -48,7 +48,7 @@ Resources:
   DBSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
-      DBSubnetGroupDescription: "Multi-AZ"
+      DBSubnetGroupDescription: "DBSubnetGroup"
       SubnetIds:
         - { "Fn::ImportValue": !Sub "${ProjectName}-PrivateSubnetA" }
         - { "Fn::ImportValue": !Sub "${ProjectName}-PrivateSubnetC" }
@@ -65,9 +65,6 @@ Resources:
     Type: AWS::RDS::DBCluster
     Properties:
       Engine: "aurora"
-      AvailabilityZones:
-        - !Select [ "0", !GetAZs ""]
-        - !Select [ "1", !GetAZs ""]
       MasterUsername: !Ref MasterUsername
       MasterUserPassword: !Ref MasterUserPassword
       DBSubnetGroupName: !Ref DBSubnetGroup
@@ -79,7 +76,6 @@ Resources:
     Type: AWS::RDS::DBInstance
     Properties:
       Engine: "aurora"
-      AvailabilityZone: !Select [ "0", !GetAZs ""]
       DBSubnetGroupName: !Ref DBSubnetGroup
       DBClusterIdentifier: !Ref DBCluster
       DBInstanceClass: !Ref DBInstanceClass
@@ -88,7 +84,6 @@ Resources:
     Type: AWS::RDS::DBInstance
     Properties:
       Engine: "aurora"
-      AvailabilityZone: !Select [ "2", !GetAZs ""]
       DBSubnetGroupName: !Ref DBSubnetGroup
       DBClusterIdentifier: !Ref DBCluster
       DBInstanceClass: !Ref DBInstanceClass
