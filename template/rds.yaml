@@ -38,6 +38,11 @@ Outputs:
     Value: !GetAtt DBCluster.Endpoint.Address
     Export:
       Name: !Sub "${ProjectName}-DBClusterEndpointAddress"
+  DBClusterReadOnlyEndpointAddress:
+    Description: ""
+    Value: !GetAtt DBCluster.ReadEndpoint.Address
+    Export:
+      Name: !Sub "${ProjectName}-DBClusterReadOnlyEndpointAddress"
   DBClusterEndpointPort:
     Description: ""
     Value: !GetAtt DBCluster.Endpoint.Port
