@@ -1,13 +1,32 @@
-Templates:
-  - template/vpc.yaml
-  - template/subnet.yaml
-  - template/sg.yaml
-#  - template/s3.yaml
-#  - template/rds.yaml
-#  - template/elb.yaml
-#  - template/ec2.yaml
-#  - template/r53.yaml
-Parameters:
-  - ProjectName: test
-Tags:
-  - ProjectName: test
+resources:
+  - name: vpc
+    type: template/vpc.yml
+    properties:
+      - name: ProjectName
+        value: example
+      - name: CidrBlock
+        value: 10.0.0.0/16
+  - name: subnetApublic
+    type: template/subnet.yml
+    properties:
+      - name: ProjectName
+        value: example
+      - name: CidrBlock
+        value: 10.0.0.0/16
+      - name: AvailabilityZone
+        value: ap-northeast-1a
+      - name: AttachInternetGateway
+        value: true
+  - name: subnetCpublic
+    type: template/subnet.yml
+    properties:
+      - name: ProjectName
+        value: example
+      - name: CidrBlock
+        value: 10.0.0.32/27
+      - name: AvailabilityZone
+        value: ap-northeast-1c
+      - name: AttachInternetGateway
+        value: true
+  - name: sg
+    type: tempalte/sg.yml

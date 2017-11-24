@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
 Description:
-  AWS EC2 Resource
+  AWS EC2 (AutoScaling) Resource
 
 Parameters:
   ProjectName:
@@ -27,6 +27,15 @@ Parameters:
   KeyPair:
     Description: ""
     Type: AWS::EC2::KeyPair::KeyName
+  SubnetA:
+    Description: ""
+    Type: String
+  SubnetC:
+    Description: ""
+    Type: String
+  TargetGroupArn:
+    Description: ""
+    Type: String
 
 Resources:
   LaunchConfiguration:
@@ -43,28 +52,37 @@ Resources:
       SecurityGroups:
         - { "Fn::ImportValue": !Sub "${ProjectName}-PublicSecurityGroup" }
       UserData:
-        Fn::Base64: |
+        Fn::Base64: !Sub |
           #!/bin/sh
+          set -x
+
           sudo apt-get update
           sudo apt-get install -y nginx
           sudo service nginx start
-#     /opt/aws/bin/cfn-signal -e 0 --stack ${AWS::StackName} --region ${AWS::Region} --resource AutoScalingGroup
+
+          # install cfn-signal
+          pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
+          cp -a /usr/local/init/ubuntu/cfn-hup /etc/init.d/cfn-hup
+          chmod u+x /etc/init.d/cfn-hup
+
+          # signal
+          /usr/local/bin/cfn-signal -e 0 --stack ${AWS::StackName} --region ${AWS::Region} --resource AutoScalingGroup
 
   AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
-#  CreationPolicy:
-#   ResourceSignal:
-#    Timeout: "PT10M"
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: "PT10M"
     Properties:
       LaunchConfigurationName: !Ref LaunchConfiguration
       TargetGroupARNs:
-        - { "Fn::ImportValue": !Sub "${ProjectName}-ApplicationLoadBalancerTargetGroup"}
+        - !Ref TargetGroupArn
       DesiredCapacity: !Ref InstanceNum
       MaxSize: !Ref InstanceNum
       MinSize: !Ref InstanceNum
       VPCZoneIdentifier:
-        - { "Fn::ImportValue": !Sub "${ProjectName}-PublicSubnetA"}
-        - { "Fn::ImportValue": !Sub "${ProjectName}-PublicSubnetC"}
+        - !Ref SubnetA
+        - !Ref SubentC
       HealthCheckType: "EC2"
       HealthCheckGracePeriod: 60
       Tags:

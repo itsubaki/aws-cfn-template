@@ -7,6 +7,11 @@ Parameters:
   ProjectName:
     Description: ""
     Type: String
+    Default: example
+  DomainName:
+    Description: ""
+    Type: String
+    Default: "no-domain"
 
 Outputs:
   ProjectName:
@@ -28,27 +33,29 @@ Outputs:
       Name: !Sub "${ProjectName}-S3Endpoint"
 
 Resources:
-  S3BucketStaging:
+  Staging:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub "${ProjectName}-staging"
+      BucketName: !Sub "${ProjectName}-staging.${DomainName}"
       Tags:
         - Key: Name
-          Value: !Sub "${ProjectName}.s3bucket.staging"
+          Value: !Sub "${ProjectName}.${DomainName}.s3bucket.staging"
         - Key: ProjectName
           Value: !Ref ProjectName
+        - Key: DomainName
+          Value: !Ref DomainName
 
-  S3Bucket:
+  Production:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Ref ProjectName
+      BucketName: !Sub "${ProjectName}.${DomainName}"
       Tags:
         - Key: Name
-          Value: !Sub "${ProjectName}.s3bucket"
-        - Key: ProjectName
-          Value: !Ref ProjectName
+          Value: !Sub "${ProjectName}.${DomainName}.s3bucket"
+        - Key: DomainName
+          Value: !Ref DomainName
 
-  S3Endpoint:
+  VPCEndpoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:
       VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-VPC" }

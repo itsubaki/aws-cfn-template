@@ -7,11 +7,33 @@ Parameters:
   ProjectName:
     Description: ""
     Type: String
-    Default: test
-  CidrBlockVPC:
+    Default: example
+  CidrBlock:
     Description: ""
     Type: String
     Default: 10.0.0.0/16
+  EnableDnsSupport:
+    Description: ""
+    Type: String
+    Default: true
+    AllowedValues:
+      - true
+      - false
+  EnableDnsHostnames:
+    Description: ""
+    Type: String
+    Default: true
+    AllowedValues:
+      - true
+      - false
+  InstanceTenancy:
+    Description: ""
+    Type: String
+    Default: defalt
+    AllowedValues:
+      - default
+      - dedicated
+
 
 Outputs:
   ProjectName:
@@ -35,10 +57,10 @@ Resources:
   VPC:
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock: !Ref CidrBlockVPC
-      EnableDnsSupport: "true"
-      EnableDnsHostnames: "true"
-      InstanceTenancy: default
+      CidrBlock: !Ref CidrBlock
+      EnableDnsSupport: !Ref EnableDnsSupport
+      EnableDnsHostnames: !Ref EnableDnsHostnames
+      InstanceTenancy: !Ref InstanceTenancy
       Tags:
         - Key: Name
           Value: !Sub "${ProjectName}.vpc"
