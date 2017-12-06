@@ -1,0 +1,284 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: ""
+
+Parameters:
+  VPCCidr:
+    Description: ""
+    Type: String
+    Default: "10.1.0.0/16"
+  EnableDnsSupport:
+    Description: ""
+    Type: String
+    Default: true
+    AllowedValues:
+      - true
+      - false
+  EnableDnsHostnames:
+    Description: ""
+    Type: String
+    Default: true
+    AllowedValues:
+      - true
+      - false
+  InstanceTenancy:
+    Description: ""
+    Type: String
+    Default: default
+    AllowedValues:
+      - default
+      - dedicated
+  SubnetCidrA:
+    Description: ""
+    Type: String
+    Default: "10.1.10.0/24"
+  SubnetCidrB:
+    Description: ""
+    Type: String
+    Default: "10.1.20.0/24"
+  AvailabilityZoneA:
+    Description: ""
+    Type: String
+    Default: us-east-1a
+  AvailabilityZoneB:
+    Description: ""
+    Type: String
+    Default: us-east-1b
+  MapPublicIpOnLaunch:
+    Description: ""
+    Type: String
+    Default: true
+    AllowedValues:
+      - true
+      - false
+  AttachInternetGateway:
+    Description: ""
+    Type: String
+    Default: "true"
+    AllowedValues:
+      - true
+      - false
+  Schema:
+    Description: ""
+    Type: String
+    Default: "internet-facing"
+    AllowedValues:
+      - "internet-facing"
+      - "internal"
+  ListenerPort:
+    Description: ""
+    Type: String
+    Default: "24224"
+  TargetGroupPort:
+    Description: ""
+    Type: String
+    Default: "24224"
+  TargetType:
+    Description: ""
+    Type: String
+    Default: "ip"
+    AllowedValues:
+      - "ip"
+      - "instance"
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: "Network Configuration"
+        Parameters:
+          - VPCCidr
+          - EnableDnsSupport
+          - EnableDnsHostnames
+          - InstanceTenancy
+          - SubnetCidrA
+          - SubnetCidrB
+          - AvailabilityZoneA
+          - AvailabilityZoneB
+          - MapPublicIpOnLaunch
+          - AttachInternetGateway
+      - Label:
+          default: "NetworkLoadBalancer Configuration"
+        Parameters:
+          - Schema
+          - ListenerPort
+          - TargetGroupPort
+          - TargetType
+
+Outputs:
+  Cluster:
+    Value: !Ref Cluster
+  TargetGroupArn:
+    Value: !Ref TargetGroup
+  SubnetA:
+    Value: !Ref SubnetA
+  SubnetB:
+    Value: !Ref SubnetB
+  SecurityGroup:
+    Value: !GetAtt SecurityGroup.GroupId
+  IAMRole:
+    Value: !GetAtt IAMRole.Arn
+  Repository:
+    Value: !Ref Repository
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VPCCidr
+      EnableDnsSupport: !Ref EnableDnsSupport
+      EnableDnsHostnames: !Ref EnableDnsHostnames
+      InstanceTenancy: !Ref InstanceTenancy
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}.vpc"
+
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}.rtable"
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}.igw"
+
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
+
+  Route:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref RouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  SubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref SubnetCidrA
+      AvailabilityZone: !Ref AvailabilityZoneA
+      MapPublicIpOnLaunch: !Ref MapPublicIpOnLaunch
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}.subnet"
+
+  SubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetA
+      RouteTableId: !Ref RouteTable
+
+  SubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref SubnetCidrB
+      AvailabilityZone: !Ref AvailabilityZoneB
+      MapPublicIpOnLaunch: !Ref MapPublicIpOnLaunch
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}.subnet"
+
+  SubnetBRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetB
+      RouteTableId: !Ref RouteTable
+
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "SecurityGroup"
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - CidrIp: !Ref VPCCidr
+          IpProtocol: "tcp"
+          FromPort: "24224"
+          ToPort: "24224"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}.sg"
+
+  Cluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Ref AWS::StackName
+
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub "${AWS::StackName}-nlb"
+      Type: "network"
+      Scheme: !Ref Schema
+      Subnets:
+        - !Ref SubnetA
+        - !Ref SubnetB
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}.nlb"
+
+  Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: !Ref ListenerPort
+      Protocol: "TCP"
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
+
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    DependsOn: LoadBalancer
+    Properties:
+      Name: !Sub "${AWS::StackName}-tg"
+      Port: !Ref TargetGroupPort
+      Protocol: "TCP"
+      VpcId: !Ref VPC
+      TargetType: !Ref TargetType
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}.targetgroup"
+
+  IAMRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Sub "${AWS::StackName}.role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action:
+              - "sts:AssumeRole"
+            Principal:
+              Service:
+                - "ecs-tasks.amazonaws.com"
+      Policies:
+        - PolicyName: !Sub "${AWS::StackName}.policy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Resource: "*"
+                Action:
+                  - "ecr:GetAuthorizationToken"
+                  - "ecr:BatchCheckLayerAvailability"
+                  - "ecr:GetDownloadUrlForLayer"
+                  - "ecr:BatchGetImage"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+
+  Repository:
+    Type: "AWS::ECR::Repository"
+    Properties:
+      RepositoryName: !Sub "${AWS::StackName}/fluentd"

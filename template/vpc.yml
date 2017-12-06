@@ -7,11 +7,9 @@ Parameters:
   ProjectName:
     Description: ""
     Type: String
-    Default: example
   CidrBlock:
     Description: ""
     Type: String
-    Default: 10.0.0.0/16
   EnableDnsSupport:
     Description: ""
     Type: String
@@ -29,11 +27,10 @@ Parameters:
   InstanceTenancy:
     Description: ""
     Type: String
-    Default: defalt
+    Default: default
     AllowedValues:
       - default
       - dedicated
-
 
 Outputs:
   ProjectName:
