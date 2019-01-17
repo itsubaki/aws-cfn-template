@@ -33,10 +33,10 @@ Resources:
   S3Bucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub "${Role}-${Environment}.${ProjectName}.${DomainName}"
+      BucketName: !Sub ${Role}-${Environment}.${ProjectName}.'{{resolve:ssm:/${ProjectName}/${Environment}/DomainName:1}}'
       Tags:
         - Key: Name
-          Value: !Sub "${Role}-${Environment}.${ProjectName}.${DomainName}"
+          Value: !Sub ${Role}-${Environment}.${ProjectName}.'{{resolve:ssm:/${ProjectName}/${Environment}/DomainName:1}}'
         - Key: ProjectName
           Value: !Ref ProjectName
         - Key: Environment
@@ -44,7 +44,7 @@ Resources:
         - Key: Role
           Value: !Ref Role
         - Key: DomainName
-          Value: !Ref DomainName
+          Value: !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/DomainName:1}}'
 
   VPCEndpoint:
     Type: AWS::EC2::VPCEndpoint
