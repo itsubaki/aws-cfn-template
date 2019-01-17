@@ -12,6 +12,10 @@ Parameters:
     Description: ""
     Type: String
     Default: "dev"
+  Role:
+    Description: ""
+    Type: String
+    Role: default
   DomainName:
     Description: ""
     Type: String
@@ -31,12 +35,14 @@ Resources:
   S3Bucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub "${ProjectName}-${Environment}.${DomainName}"
+      BucketName: !Sub "${Role}.${ProjectName}-${Environment}.${DomainName}"
       Tags:
         - Key: Name
-          Value: !Sub "${ProjectName}-${Environment}.${DomainName}"
+          Value: !Sub "${Role}.${ProjectName}-${Environment}.${DomainName}"
         - Key: Environment
           Value: !Ref Environment
+        - Key: Role
+          Value: !Ref Role
         - Key: DomainName
           Value: !Ref DomainName
 
