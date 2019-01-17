@@ -1,13 +1,16 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
 Description:
-  AWS RDS(Aurora) Resource
+  AWS Database Resource
 
 Parameters:
   ProjectName:
     Description: ""
     Type: String
-    Default: example
+  Environment:
+    Description: ""
+    Type: String
+    Default: dev
   MasterUsername:
     Description: ""
     Type: String
@@ -25,17 +28,6 @@ Parameters:
       - db.r3.2xlarge
       - db.r3.4xlarge
       - db.r3.8xlarge
-  DBSnapshotName:
-    Description: ""
-    Type: String
-    Default: ""
-  PubliclyAccessible:
-    Description: ""
-    Type: String
-    Default: false
-    AllowedValues:
-      - true
-      - false
   MultiAZ:
     Description: ""
     Type: String
@@ -43,12 +35,13 @@ Parameters:
     AllowedValues:
       - true
       - false
-  SubnetA:
+  DeletionPolicy:
     Description: ""
     Type: String
-  SubnetC:
-    Description: ""
-    Type: String
+    Default: true
+    AllowedValues:
+      - true
+      - false
 
 Conditions:
   UseDBSnapshot: !Not [!Equals [ !Ref DBSnapshotName, "" ]]
@@ -71,24 +64,27 @@ Resources:
       Parameters:
         character_set_database: "utf8"
 
+  DBParameterGroup:
+    Type: "AWS::RDS::DBParameterGroup"
+    Properties:
+      Description: ""
+      Family: "aurora5.6"
+      Parameters:
+        slow_query_log: 1
+        long_query_time: 1
+
   DBCluster:
     Type: AWS::RDS::DBCluster
     DeletionPolicy: "Snapshot"
     Properties:
       Engine: "aurora"
-      MasterUsername: !If
-        - UseDBSnapshot
-        - !Ref AWS::NoValue
-        - !Ref MasterUsername
+      MasterUsername: !Ref MasterUsername
       MasterUserPassword: !Ref MasterUserPassword
       DBSubnetGroupName: !Ref DBSubnetGroup
       DBClusterParameterGroupName: !Ref DBClusterParameterGroup
+      DeletionPolicy: !Ref DeletionPolicy
       VpcSecurityGroupIds:
-        - { "Fn::ImportValue": !Sub "${ProjectName}-PrivateSecurityGroup"}
-      SnapshotIdentifier: !If
-        - UseDBSnapshot
-        - !Ref DBSnapshotName
-        - !Ref AWS::NoValue
+        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSecurityGroup:1}}'
 
   DBInstanceA:
     Type: AWS::RDS::DBInstance
@@ -96,23 +92,25 @@ Resources:
       Engine: "aurora"
       DBClusterIdentifier: !Ref DBCluster
       DBSubnetGroupName: !Ref DBSubnetGroup
+      DBParameterGroupName: !Ref DBParameterGroup
       DBInstanceClass: !Ref DBInstanceClass
-      PubliclyAccessible: !Ref PubliclyAccessible
+      EnablePerformanceInsights: true
       Tags:
         - Key: ProjectName
           Value: !Ref ProjectName
-        - Key: DBSnapshotName
-          Value: !Ref DBSnapshotName
+        - Key: Environment
+          Value: !Ref Environment
 
-  DBInstanceC:
+  DBInstanceB:
     Type: AWS::RDS::DBInstance
     Condition: IsMultiAZ
     Properties:
       Engine: "aurora"
       DBClusterIdentifier: !Ref DBCluster
       DBSubnetGroupName: !Ref DBSubnetGroup
+      DBParameterGroupName: !Ref DBParameterGroup
       DBInstanceClass: !Ref DBInstanceClass
-      PubliclyAccessible: !Ref PubliclyAccessible
+      EnablePerformanceInsights: true
       Tags:
         - Key: ProjectName
           Value: !Ref ProjectName

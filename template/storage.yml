@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description:
+  AWS Storage Resource
+
+Parameters:
+  ProjectName:
+    Description: ""
+    Type: String
+    Default: example
+  Environment:
+    Description: ""
+    Type: String
+    Default: "dev"
+  DomainName:
+    Description: ""
+    Type: String
+    Default: "no-domain"
+
+Outputs:
+  ProjectName:
+    Value: !Ref ProjectName
+  S3Bucket:
+    Description: ""
+    Value: !Ref S3Bucket
+  S3Endpoint:
+    Description: ""
+    Value: !Ref S3Endpoint
+
+Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${ProjectName}-${Environment}.${DomainName}"
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}-${Environment}.${DomainName}"
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: DomainName
+          Value: !Ref DomainName
+
+  VPCEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/VPCID:1}}'
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.s3"
+      RouteTableIds:
+        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PublicRouteTable:1}}'
+        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateRouteTable:1}}'

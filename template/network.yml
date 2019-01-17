@@ -1,0 +1,351 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description:
+  AWS Network Resource
+
+Parameters:
+  ProjectName:
+    Description: ""
+    Type: String
+  Environment:
+    Description: ""
+    Type: String
+    Default: "dev"
+  CidrBlock:
+    Description: ""
+    Type: String
+    Default: "10.0.0.0/16"
+  PublicSubnetACidrBlock:
+    Description: ""
+    Type: String
+    Default: "10.0.1.0/24"
+  PublicSubnetBCidrBlock:
+    Description: ""
+    Type: String
+    Default: "10.0.2.0/24"
+  PublicSubnetCCidrBlock:
+    Description: ""
+    Type: String
+    Default: "10.0.3.0/24"
+  PrivateSubnetACidrBlock:
+    Description: ""
+    Type: String
+    Default: "10.0.4.0/24"
+  PrivateSubnetBCidrBlock:
+    Description: ""
+    Type: String
+    Default: "10.0.5.0/24"
+  PrivateSubnetCCidrBlock:
+    Description: ""
+    Type: String
+    Default: "10.0.6.0/24"
+  EnableDnsSupport:
+    Description: ""
+    Type: String
+    Default: true
+    AllowedValues:
+      - true
+      - false
+  EnableDnsHostnames:
+    Description: ""
+    Type: String
+    Default: true
+    AllowedValues:
+      - true
+      - false
+  InstanceTenancy:
+    Description: ""
+    Type: String
+    Default: default
+    AllowedValues:
+      - default
+      - dedicated
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: "Project Configuration"
+        Parameters:
+          - ProjectName
+          - Environment
+      - Label:
+          default: "VPC Configuration"
+        Parameters:
+          - CidrBlock
+          - EnableDnsSupport
+          - EnableDnsHostnames
+          - InstanceTenancy
+      - Label:
+          default: "Subnet Configuration"
+        Parameters:
+          - PublicSubnetACidrBlock
+          - PublicSubnetBCidrBlock
+          - PublicSubnetCCidrBlock
+          - PrivateSubnetACidrBlock
+          - PrivateSubnetBCidrBlock
+          - PrivateSubnetCCidrBlock
+
+Outputs:
+  ProjectName:
+    Value: !Ref ProjectName
+  Environment:
+    Value: !Ref Environment
+  VPC:
+    Value: !Ref VPC
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref CidrBlock
+      EnableDnsSupport: !Ref EnableDnsSupport
+      EnableDnsHostnames: !Ref EnableDnsHostnames
+      InstanceTenancy: !Ref InstanceTenancy
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.${Environment}.vpc"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.${Environment}.rt.public"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.${Environment}.rt.private"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.${Environment}.igw"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
+
+  Route:
+    Type: AWS::EC2::Route
+    Properties:
+      GatewayId: !Ref InternetGateway
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+
+  PublicSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref PublicSubnetACidrBlock
+      AvailabilityZone: !Select [ "0", !GetAZs ""]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.${Environment}.public.subnet.a"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+
+  PublicSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref PublicSubnetBCidrBlock
+      AvailabilityZone: !Select [ "1", !GetAZs ""]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.${Environment}.public.subnet.b"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+
+  PublicSubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref PublicSubnetCCidrBlock
+      AvailabilityZone: !Select [ "2", !GetAZs ""]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.${Environment}.public.subnet.c"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+
+  PrivateSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref PrivateSubnetACidrBlock
+      AvailabilityZone: !Select [ "0", !GetAZs ""]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.${Environment}.private.subnet.a"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+
+  PrivateSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref PrivateSubnetBCidrBlock
+      AvailabilityZone: !Select [ "1", !GetAZs ""]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.${Environment}.private.subnet.b"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+
+  PrivateSubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref PrivateSubnetCCidrBlock
+      AvailabilityZone: !Select [ "2", !GetAZs ""]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.${Environment}.private.subnet.c"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+
+  PublicSubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetA
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnetBRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetB
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnetCRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetC
+      RouteTableId: !Ref PublicRouteTable
+
+  PrivateSubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetA
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateSubnetBRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetB
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateSubnetCRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetC
+      RouteTableId: !Ref PrivateRouteTable
+
+  PublicSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "PublicSecurityGroup"
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.${Environment}.sg.public"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+
+  PrivateSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "PrivateSecurityGroup"
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.${Environment}.sg.private"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+
+  SSMVPC:
+    Type: "AWS::SSM::Parameter"
+    Properties:
+      Description: "VPC"
+      Name: !Sub "/${ProjectName}/${Environment}/VPCID"
+      Value: !Ref VPC
+      Type: String
+
+  SSMPublicRouteTable:
+    Type: "AWS::SSM::Parameter"
+    Properties:
+      Description: "PublicRouteTable"
+      Name: !Sub "/${ProjectName}/${Environment}/PublicRouteTable"
+      Value: !Ref PublicRouteTable
+      Type: String
+
+  SSMPrivateRouteTable:
+    Type: "AWS::SSM::Parameter"
+    Properties:
+      Description: "PrivateRouteTable"
+      Name: !Sub "/${ProjectName}/${Environment}/PrivateRouteTable"
+      Value: !Ref PrivateRouteTable
+      Type: String
+
+  SSMPublicSecurityGroup:
+    Type: "AWS::SSM::Parameter"
+    Properties:
+      Description: "PublicSecurityGroup"
+      Name: !Sub "/${ProjectName}/${Environment}/PublicSecurityGroup"
+      Value: !Ref PublicSecurityGroup
+      Type: String
+
+  SSMPrivateSecurityGroup:
+    Type: "AWS::SSM::Parameter"
+    Properties:
+      Description: "PrivateSecurityGroup"
+      Name: !Sub "/${ProjectName}/${Environment}/PrivateSecurityGroup"
+      Value: !Ref PrivateSecurityGroup
+      Type: String
