@@ -11,6 +11,10 @@ Parameters:
     Description: ""
     Type: String
     Default: dev
+  Role:
+    Description: ""
+    Type: String
+    Default: default
   MasterUsername:
     Description: ""
     Type: String
@@ -35,7 +39,7 @@ Parameters:
     AllowedValues:
       - true
       - false
-  DeletionPolicy:
+  DeletionProtection:
     Description: ""
     Type: String
     Default: true
@@ -44,7 +48,6 @@ Parameters:
       - false
 
 Conditions:
-  UseDBSnapshot: !Not [!Equals [ !Ref DBSnapshotName, "" ]]
   IsMultiAZ: !Equals [ !Ref MultiAZ, "true" ]
 
 Resources:
@@ -53,8 +56,9 @@ Resources:
     Properties:
       DBSubnetGroupDescription: "DBSubnetGroup"
       SubnetIds:
-        - !Ref SubnetA
-        - !Ref SubnetC
+        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSubnetA:1}}'
+        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSubnetB:1}}'
+        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSubnetC:1}}'
 
   DBClusterParameterGroup:
     Type: AWS::RDS::DBClusterParameterGroup
@@ -77,12 +81,13 @@ Resources:
     Type: AWS::RDS::DBCluster
     DeletionPolicy: "Snapshot"
     Properties:
+      Name: !Sub "${ProjectName}.${Environment}.${Role}"
       Engine: "aurora"
       MasterUsername: !Ref MasterUsername
       MasterUserPassword: !Ref MasterUserPassword
       DBSubnetGroupName: !Ref DBSubnetGroup
       DBClusterParameterGroupName: !Ref DBClusterParameterGroup
-      DeletionPolicy: !Ref DeletionPolicy
+      DeletionProtection: !Ref DeletionProtection
       VpcSecurityGroupIds:
         - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSecurityGroup:1}}'
 
@@ -100,6 +105,8 @@ Resources:
           Value: !Ref ProjectName
         - Key: Environment
           Value: !Ref Environment
+        - Key: Role
+          Value: !Ref Role
 
   DBInstanceB:
     Type: AWS::RDS::DBInstance
@@ -114,5 +121,7 @@ Resources:
       Tags:
         - Key: ProjectName
           Value: !Ref ProjectName
-        - Key: DBSnapshotName
-          Value: !Ref DBSnapshotName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Role
+          Value: !Ref Role

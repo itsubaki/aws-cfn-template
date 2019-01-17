@@ -349,3 +349,27 @@ Resources:
       Name: !Sub "/${ProjectName}/${Environment}/PrivateSecurityGroup"
       Value: !Ref PrivateSecurityGroup
       Type: String
+
+  SSMPrivateSubnetA:
+    Type: "AWS::SSM::Parameter"
+    Properties:
+      Description: "PrivateSubnetA"
+      Name: !Sub "/${ProjectName}/${Environment}/PrivateSubnetA"
+      Value: !Ref PrivateSubnetA
+      Type: String
+
+  SSMPrivateSubnetB:
+    Type: "AWS::SSM::Parameter"
+    Properties:
+      Description: "PrivateSubnetB"
+      Name: !Sub "/${ProjectName}/${Environment}/PrivateSubnetB"
+      Value: !Ref PrivateSubnetB
+      Type: String
+
+  SSMPrivateSubnetC:
+    Type: "AWS::SSM::Parameter"
+    Properties:
+      Description: "PrivateSubnetC"
+      Name: !Sub "/${ProjectName}/${Environment}/PrivateSubnetC"
+      Value: !Ref PrivateSubnetC
+      Type: String
