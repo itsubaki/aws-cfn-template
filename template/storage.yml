@@ -25,20 +25,20 @@ Outputs:
   ProjectName:
     Value: !Ref ProjectName
   S3Bucket:
-    Description: ""
     Value: !Ref S3Bucket
   S3Endpoint:
-    Description: ""
     Value: !Ref S3Endpoint
 
 Resources:
   S3Bucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub "${Role}.${ProjectName}-${Environment}.${DomainName}"
+      BucketName: !Sub "${Role}-${Environment}.${ProjectName}.${DomainName}"
       Tags:
         - Key: Name
-          Value: !Sub "${Role}.${ProjectName}-${Environment}.${DomainName}"
+          Value: !Sub "${Role}-${Environment}.${ProjectName}.${DomainName}"
+        - Key: ProjectName
+          Value: !Ref ProjectName
         - Key: Environment
           Value: !Ref Environment
         - Key: Role

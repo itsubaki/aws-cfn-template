@@ -1,0 +1,17 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description:
+  AWS ElastiCache Resource
+
+Parameters:
+  ProjectName:
+    Description: ""
+    Type: String
+  Environment:
+    Description: ""
+    Type: String
+    Default: dev
+  Role:
+    Description: ""
+    Type: String
+    Default: default
