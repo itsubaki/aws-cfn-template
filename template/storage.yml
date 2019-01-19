@@ -12,31 +12,31 @@ Parameters:
     Description: ""
     Type: String
     Default: "dev"
-  Role:
-    Description: ""
-    Type: String
-    Role: default
   DomainName:
     Description: ""
     Type: String
-    Default: "no-domain"
+    Default: "example.com"
+  Role:
+    Description: ""
+    Type: String
+    Default: default
 
 Outputs:
   ProjectName:
     Value: !Ref ProjectName
-  S3Bucket:
+  S3BucketName:
     Value: !Ref S3Bucket
-  S3Endpoint:
-    Value: !Ref S3Endpoint
+  VPCEndpoint:
+    Value: !Ref VPCEndpoint
 
 Resources:
   S3Bucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub ${Role}-${Environment}.${ProjectName}.'{{resolve:ssm:/${ProjectName}/${Environment}/DomainName:1}}'
+      BucketName: !Sub ${Role}-${Environment}.${ProjectName}.${DomainName}
       Tags:
         - Key: Name
-          Value: !Sub ${Role}-${Environment}.${ProjectName}.'{{resolve:ssm:/${ProjectName}/${Environment}/DomainName:1}}'
+          Value: !Sub ${Role}-${Environment}.${ProjectName}.${DomainName}
         - Key: ProjectName
           Value: !Ref ProjectName
         - Key: Environment
@@ -44,7 +44,7 @@ Resources:
         - Key: Role
           Value: !Ref Role
         - Key: DomainName
-          Value: !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/DomainName:1}}'
+          Value: !Sub DomainName
 
   VPCEndpoint:
     Type: AWS::EC2::VPCEndpoint
@@ -54,3 +54,11 @@ Resources:
       RouteTableIds:
         - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PublicRouteTable:1}}'
         - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateRouteTable:1}}'
+
+  SSMS3BucketName:
+    Type: "AWS::SSM::Parameter"
+    Properties:
+      Description: "PrivateSubnetA"
+      Name: !Sub "/${ProjectName}/${Environment}/storage/${Role}/S3BucketName"
+      Value: !Sub ${Role}-${Environment}.${ProjectName}.${DomainName}
+      Type: String

@@ -11,6 +11,10 @@ Parameters:
     Description: ""
     Type: String
     Default: dev
+  DomainName:
+    Description: ""
+    Type: String
+    Default: "example.com"
   Role:
     Description: ""
     Type: String
