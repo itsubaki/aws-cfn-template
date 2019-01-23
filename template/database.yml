@@ -48,57 +48,57 @@ Parameters:
       - false
 
 Conditions:
-  IsMultiAZ: !Equals [ !Ref MultiAZ, "true" ]
+  MultiAZ: !Equals [ !Ref MultiAZ, "true" ]
 
 Resources:
-  DBSubnetGroup:
+  SubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
-      DBSubnetGroupDescription: "DBSubnetGroup"
+      DBSubnetGroupDescription: "SubnetGroup"
       SubnetIds:
         - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSubnetA:1}}'
         - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSubnetB:1}}'
         - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSubnetC:1}}'
 
-  DBClusterParameterGroup:
+  ClusterParameterGroup:
     Type: AWS::RDS::DBClusterParameterGroup
     Properties:
-      Description: ""
-      Family: "aurora5.6"
+      Description: "ClusterParameterGroup"
+      Family: aurora5.6
       Parameters:
-        character_set_database: "utf8"
+        character_set_database: utf8
 
-  DBParameterGroup:
+  ParameterGroup:
     Type: "AWS::RDS::DBParameterGroup"
     Properties:
-      Description: ""
-      Family: "aurora5.6"
+      Description: "ParameterGroup"
+      Family: aurora5.6
       Parameters:
         slow_query_log: 1
         long_query_time: 1
 
-  DBCluster:
+  Cluster:
     Type: AWS::RDS::DBCluster
-    DeletionPolicy: "Snapshot"
+    DeletionPolicy: Snapshot
     Properties:
       Name: !Sub "${ProjectName}.${Environment}.${Role}"
-      Engine: "aurora"
-      MasterUsername: !Ref MasterUsername
+      Engine: aurora
+      MasterUsername:     !Ref MasterUsername
       MasterUserPassword: !Ref MasterUserPassword
-      DBSubnetGroupName: !Ref DBSubnetGroup
-      DBClusterParameterGroupName: !Ref DBClusterParameterGroup
+      DBSubnetGroupName:  !Ref SubnetGroup
       DeletionProtection: !Ref DeletionProtection
+      DBClusterParameterGroupName: !Ref ClusterParameterGroup
       VpcSecurityGroupIds:
         - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSecurityGroup:1}}'
 
-  DBInstanceA:
+  InstanceA:
     Type: AWS::RDS::DBInstance
     Properties:
-      Engine: "aurora"
-      DBClusterIdentifier: !Ref DBCluster
-      DBSubnetGroupName: !Ref DBSubnetGroup
-      DBParameterGroupName: !Ref DBParameterGroup
-      DBInstanceClass: !Ref DBInstanceClass
+      Engine: aurora
+      DBClusterIdentifier:  !Ref Cluster
+      DBSubnetGroupName:    !Ref SubnetGroup
+      DBParameterGroupName: !Ref ParameterGroup
+      DBInstanceClass:      !Ref DBInstanceClass
       EnablePerformanceInsights: true
       Tags:
         - Key: ProjectName
@@ -108,15 +108,15 @@ Resources:
         - Key: Role
           Value: !Ref Role
 
-  DBInstanceB:
+  InstanceB:
     Type: AWS::RDS::DBInstance
-    Condition: IsMultiAZ
+    Condition: MultiAZ
     Properties:
-      Engine: "aurora"
-      DBClusterIdentifier: !Ref DBCluster
-      DBSubnetGroupName: !Ref DBSubnetGroup
-      DBParameterGroupName: !Ref DBParameterGroup
-      DBInstanceClass: !Ref DBInstanceClass
+      Engine: aurora
+      DBClusterIdentifier:  !Ref Cluster
+      DBSubnetGroupName:    !Ref SubnetGroup
+      DBParameterGroupName: !Ref ParameterGroup
+      DBInstanceClass:      !Ref DBInstanceClass
       EnablePerformanceInsights: true
       Tags:
         - Key: ProjectName

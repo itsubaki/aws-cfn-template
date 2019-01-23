@@ -1,0 +1,102 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description:
+  AWS Cache Resource
+
+Parameters:
+  ProjectName:
+    Description: ""
+    Type: String
+  Environment:
+    Description: ""
+    Type: String
+    Default: dev
+  Role:
+    Description: ""
+    Type: String
+    Default: default
+  Engine:
+    Description: ""
+    Type: String
+    Default: redis
+    AllowedValues:
+      - redis
+  EngineVersion:
+    Description: ""
+    Type: String
+    Default: 5.0.0
+    AllowedValues:
+      - 5.0.0
+  ParameterGroupFamily:
+    Description: ""
+    Type: String
+    Default: redis5.0
+  CacheNodeType:
+    Description: ""
+    Type: String
+    Default: cache.t2.medium
+    AllowedValues:
+      - cache.t2.micro
+      - cache.t2.small
+      - cache.t2.medium
+      - cache.r5.large
+      - cache.r5.xlarge
+      - cache.r5.2xlarge
+      - cache.r5.4xlarge
+      - cache.r5.12xlarge
+      - cache.r5.24xlarge
+  NumCacheClusters:
+    Description: ""
+    Type: Number
+    Default: 1
+    MinValue: 1
+    MaxValue: 6
+  Databases:
+    Description: ""
+    Type: String
+    Default: 16
+  Timeout:
+    Description: "0, 20-"
+    Type: String
+    Default: 20
+
+Conditions:
+  MultiAZ: !Not [!Equals [ !Ref NumCacheClusters, 1 ] ]
+
+Resources:
+  SubnetGroup:
+    Type: "AWS::ElastiCache::SubnetGroup"
+    Properties:
+      Description: "SubnetGroup"
+      SubnetIds:
+        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSubnetA:1}}'
+        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSubnetB:1}}'
+        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSubnetC:1}}'
+
+  ParameterGroup:
+    Type: "AWS::ElastiCache::ParameterGroup"
+    Properties:
+      Description: "ParameterGroup"
+      CacheParameterGroupFamily: !Ref ParameterGroupFamily
+    Properties:
+      timeout:   !Ref Timeout
+      databases: !Ref Database
+
+  ReplicationGroup:
+    DependsOn:
+      - "SubnetGroup"
+      - "ParameterGroup"
+    Type: "AWS::ElastiCache::ReplicationGroup"
+    DeletionPolicy: Snapshot
+    Properties:
+      ReplicationGroupDescription: "ReplicationGroup"
+      ReplicationGroupId:          !Sub "${ProjectName}.${Environment}.${Role}"
+      AutomaticFailoverEnabled:    !If [MultiAZ, true, false]
+      CacheNodeType:               !Ref CacheNodeType
+      CacheParameterGroupName:     !Ref ParameterGroup
+      CacheSubnetGroupName:        !Ref SubnetGroup
+      Engine:                      !Ref Engine
+      EngineVersion:               !Ref EngineVersion
+      NumCacheClusters:            !Ref NumCacheClusters
+      SecurityGroupIds:
+        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSecurityGroup:1}}'
