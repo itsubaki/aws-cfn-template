@@ -15,6 +15,10 @@ Parameters:
     Description: ""
     Type: String
     Default: default
+  DomainName:
+    Description: ""
+    Type: String
+    Default: "example.com"
   Engine:
     Description: ""
     Type: String
@@ -100,3 +104,11 @@ Resources:
       NumCacheClusters:            !Ref NumCacheClusters
       SecurityGroupIds:
         - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSecurityGroup:1}}'
+
+  SSMPrimaryEndPointAddress:
+    Type: "AWS::SSM::Parameter"
+    Properties:
+      Description: "EndpointAddress"
+      Name: !Sub "/${ProjectName}/${Environment}/cache/${Role}/PrimaryEndPointAddress"
+      Value: !GetAtt ReplicationGroup.PrimaryEndPoint.Address
+      Type: String

@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description:
+  AWS Frontend Resource
+
+Parameters:
+  ProjectName:
+    Description: ""
+    Type: String
+  Environment:
+    Description: ""
+    Type: String
+    Default: dev
+  Role:
+    Description: ""
+    Type: String
+    Default: default
+  DomainName:
+    Description: ""
+    Type: String
+    Default: "example.com"

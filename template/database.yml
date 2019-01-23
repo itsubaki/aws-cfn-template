@@ -15,6 +15,10 @@ Parameters:
     Description: ""
     Type: String
     Default: default
+  DomainName:
+    Description: ""
+    Type: String
+    Default: "example.com"
   MasterUsername:
     Description: ""
     Type: String
@@ -125,3 +129,35 @@ Resources:
           Value: !Ref Environment
         - Key: Role
           Value: !Ref Role
+
+  SSMEndpointAddress:
+    Type: "AWS::SSM::Parameter"
+    Properties:
+      Description: "EndpointAddress"
+      Name: !Sub "/${ProjectName}/${Environment}/database/${Role}/EndpointAddress"
+      Value: !GetAtt DBCluster.Endpoint.Address
+      Type: String
+
+  SSMReadEndpointAddress:
+    Type: "AWS::SSM::Parameter"
+    Properties:
+      Description: "ReadEndpointAddress"
+      Name: !Sub "/${ProjectName}/${Environment}/database/${Role}/ReadEndpointAddress"
+      Value: !GetAtt DBCluster.ReadEndpoint.Address
+      Type: String
+
+  SSMMasterUsername:
+    Type: "AWS::SSM::Parameter"
+    Properties:
+      Description: "MasterUsername"
+      Name: !Sub "/${ProjectName}/${Environment}/database/${Role}/MasterUsername"
+      Value: !Ref MasterUsername
+      Type: String
+
+  SSMMasterUserPassword:
+    Type: "AWS::SSM::Parameter"
+    Properties:
+      Description: "MasterUserPassword"
+      Name: !Sub "/${ProjectName}/${Environment}/database/${Role}/MasterUserPassword"
+      Value: !Ref MasterUserPassword
+      Type: String
