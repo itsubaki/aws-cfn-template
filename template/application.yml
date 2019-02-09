@@ -1,16 +1,17 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
 Description:
-  AWS Frontend Resource
+  AWS Application Resource
 
 Parameters:
   ProjectName:
     Description: ""
     Type: String
+    Default: "example"
   Environment:
     Description: ""
     Type: String
-    Default: dev
+    Default: "dev"
   DomainName:
     Description: ""
     Type: String
@@ -18,4 +19,4 @@ Parameters:
   Role:
     Description: ""
     Type: String
-    Default: default
+    Default: "default"

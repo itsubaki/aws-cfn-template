@@ -7,7 +7,7 @@ Parameters:
   ProjectName:
     Description: ""
     Type: String
-    Default: example
+    Default: "example"
   Environment:
     Description: ""
     Type: String
@@ -19,7 +19,7 @@ Parameters:
   Role:
     Description: ""
     Type: String
-    Default: default
+    Default: "default"
 
 Outputs:
   ProjectName:

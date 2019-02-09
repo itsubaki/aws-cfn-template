@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
 Description:
-  AWS ElastiCache Resource
+  AWS Content Delivery Network Resource
 
 Parameters:
   ProjectName:

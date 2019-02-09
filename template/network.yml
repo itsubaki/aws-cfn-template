@@ -7,6 +7,7 @@ Parameters:
   ProjectName:
     Description: ""
     Type: String
+    Default: "example"
   Environment:
     Description: ""
     Type: String
@@ -60,7 +61,7 @@ Parameters:
   InstanceTenancy:
     Description: ""
     Type: String
-    Default: default
+    Default: "default"
     AllowedValues:
       - default
       - dedicated
