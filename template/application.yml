@@ -7,16 +7,16 @@ Parameters:
   ProjectName:
     Description: ""
     Type: String
-    Default: "example"
+    Default: example
   Environment:
     Description: ""
     Type: String
-    Default: "dev"
+    Default: dev
   DomainName:
     Description: ""
     Type: String
-    Default: "example.com"
+    Default: example.com
   Role:
     Description: ""
     Type: String
-    Default: "default"
+    Default: default

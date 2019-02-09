@@ -7,19 +7,19 @@ Parameters:
   ProjectName:
     Description: ""
     Type: String
-    Default: "example"
+    Default: example
   Environment:
     Description: ""
     Type: String
-    Default: "dev"
-  DomainName:
-    Description: ""
-    Type: String
-    Default: "example.com"
+    Default: dev
   Role:
     Description: ""
     Type: String
-    Default: "default"
+    Default: default
+  DomainName:
+    Description: ""
+    Type: String
+    Default: example.com
 
 Outputs:
   ProjectName:
@@ -56,7 +56,7 @@ Resources:
         - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateRouteTable:1}}'
 
   SSMS3BucketName:
-    Type: "AWS::SSM::Parameter"
+    Type: AWS::SSM::Parameter
     Properties:
       Description: "PrivateSubnetA"
       Name: !Sub "/${ProjectName}/${Environment}/storage/${Role}/S3BucketName"

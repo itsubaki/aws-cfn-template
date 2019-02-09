@@ -7,43 +7,43 @@ Parameters:
   ProjectName:
     Description: ""
     Type: String
-    Default: "example"
+    Default: example
   Environment:
     Description: ""
     Type: String
-    Default: "dev"
+    Default: dev
   DomainName:
     Description: ""
     Type: String
-    Default: "example.com"
+    Default: example.com
   CidrBlock:
     Description: ""
     Type: String
-    Default: "10.0.0.0/16"
+    Default: 10.0.0.0/16
   PublicSubnetACidrBlock:
     Description: ""
     Type: String
-    Default: "10.0.1.0/24"
+    Default: 10.0.1.0/24
   PublicSubnetBCidrBlock:
     Description: ""
     Type: String
-    Default: "10.0.2.0/24"
+    Default: 10.0.2.0/24
   PublicSubnetCCidrBlock:
     Description: ""
     Type: String
-    Default: "10.0.3.0/24"
+    Default: 10.0.3.0/24
   PrivateSubnetACidrBlock:
     Description: ""
     Type: String
-    Default: "10.0.4.0/24"
+    Default: 10.0.4.0/24
   PrivateSubnetBCidrBlock:
     Description: ""
     Type: String
-    Default: "10.0.5.0/24"
+    Default: 10.0.5.0/24
   PrivateSubnetCCidrBlock:
     Description: ""
     Type: String
-    Default: "10.0.6.0/24"
+    Default: 10.0.6.0/24
   EnableDnsSupport:
     Description: ""
     Type: String
@@ -61,7 +61,7 @@ Parameters:
   InstanceTenancy:
     Description: ""
     Type: String
-    Default: "default"
+    Default: default
     AllowedValues:
       - default
       - dedicated
@@ -186,10 +186,10 @@ Resources:
   VPC:
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock: !Ref CidrBlock
-      EnableDnsSupport: !Ref EnableDnsSupport
+      CidrBlock:          !Ref CidrBlock
+      EnableDnsSupport:   !Ref EnableDnsSupport
       EnableDnsHostnames: !Ref EnableDnsHostnames
-      InstanceTenancy: !Ref InstanceTenancy
+      InstanceTenancy:    !Ref InstanceTenancy
       Tags:
         - Key: Name
           Value: !Sub "${ProjectName}.${Environment}.vpc"
@@ -242,14 +242,14 @@ Resources:
   Route:
     Type: AWS::EC2::Route
     Properties:
-      GatewayId: !Ref InternetGateway
+      GatewayId:    !Ref InternetGateway
       RouteTableId: !Ref PublicRouteTable
       DestinationCidrBlock: 0.0.0.0/0
 
   PublicSubnetA:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId: !Ref VPC
+      VpcId:     !Ref VPC
       CidrBlock: !Ref PublicSubnetACidrBlock
       AvailabilityZone: !Select [ "0", !GetAZs ""]
       MapPublicIpOnLaunch: true
@@ -264,7 +264,7 @@ Resources:
   PublicSubnetB:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId: !Ref VPC
+      VpcId:     !Ref VPC
       CidrBlock: !Ref PublicSubnetBCidrBlock
       AvailabilityZone: !Select [ "1", !GetAZs ""]
       MapPublicIpOnLaunch: true
@@ -279,7 +279,7 @@ Resources:
   PublicSubnetC:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId: !Ref VPC
+      VpcId:     !Ref VPC
       CidrBlock: !Ref PublicSubnetCCidrBlock
       AvailabilityZone: !Select [ "2", !GetAZs ""]
       MapPublicIpOnLaunch: true
@@ -294,7 +294,7 @@ Resources:
   PrivateSubnetA:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId: !Ref VPC
+      VpcId:     !Ref VPC
       CidrBlock: !Ref PrivateSubnetACidrBlock
       AvailabilityZone: !Select [ "0", !GetAZs ""]
       MapPublicIpOnLaunch: true
@@ -309,7 +309,7 @@ Resources:
   PrivateSubnetB:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId: !Ref VPC
+      VpcId:     !Ref VPC
       CidrBlock: !Ref PrivateSubnetBCidrBlock
       AvailabilityZone: !Select [ "1", !GetAZs ""]
       MapPublicIpOnLaunch: true
@@ -324,7 +324,7 @@ Resources:
   PrivateSubnetC:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId: !Ref VPC
+      VpcId:     !Ref VPC
       CidrBlock: !Ref PrivateSubnetCCidrBlock
       AvailabilityZone: !Select [ "2", !GetAZs ""]
       MapPublicIpOnLaunch: true
@@ -339,37 +339,37 @@ Resources:
   PublicSubnetARouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId: !Ref PublicSubnetA
+      SubnetId:     !Ref PublicSubnetA
       RouteTableId: !Ref PublicRouteTable
 
   PublicSubnetBRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId: !Ref PublicSubnetB
+      SubnetId:     !Ref PublicSubnetB
       RouteTableId: !Ref PublicRouteTable
 
   PublicSubnetCRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId: !Ref PublicSubnetC
+      SubnetId:     !Ref PublicSubnetC
       RouteTableId: !Ref PublicRouteTable
 
   PrivateSubnetARouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId: !Ref PrivateSubnetA
+      SubnetId:     !Ref PrivateSubnetA
       RouteTableId: !Ref PrivateRouteTable
 
   PrivateSubnetBRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId: !Ref PrivateSubnetB
+      SubnetId:     !Ref PrivateSubnetB
       RouteTableId: !Ref PrivateRouteTable
 
   PrivateSubnetCRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId: !Ref PrivateSubnetC
+      SubnetId:     !Ref PrivateSubnetC
       RouteTableId: !Ref PrivateRouteTable
 
   PublicSecurityGroup:
@@ -399,7 +399,7 @@ Resources:
           Value: !Ref Environment
 
   SSMDomainName:
-    Type: "AWS::SSM::Parameter"
+    Type: AWS::SSM::Parameter
     Properties:
       Description: "DomainName"
       Name: !Sub "/${ProjectName}/${Environment}/DomainName"
@@ -407,65 +407,65 @@ Resources:
       Type: String
 
   SSMVPC:
-    Type: "AWS::SSM::Parameter"
+    Type: AWS::SSM::Parameter
     Properties:
       Description: "VPC"
-      Name: !Sub "/${ProjectName}/${Environment}/VPCID"
+      Name:  !Sub "/${ProjectName}/${Environment}/VPCID"
       Value: !Ref VPC
       Type: String
 
   SSMPublicRouteTable:
-    Type: "AWS::SSM::Parameter"
+    Type: AWS::SSM::Parameter
     Properties:
       Description: "PublicRouteTable"
-      Name: !Sub "/${ProjectName}/${Environment}/PublicRouteTable"
+      Name:  !Sub "/${ProjectName}/${Environment}/PublicRouteTable"
       Value: !Ref PublicRouteTable
       Type: String
 
   SSMPrivateRouteTable:
-    Type: "AWS::SSM::Parameter"
+    Type: AWS::SSM::Parameter
     Properties:
       Description: "PrivateRouteTable"
-      Name: !Sub "/${ProjectName}/${Environment}/PrivateRouteTable"
+      Name:  !Sub "/${ProjectName}/${Environment}/PrivateRouteTable"
       Value: !Ref PrivateRouteTable
       Type: String
 
   SSMPublicSecurityGroup:
-    Type: "AWS::SSM::Parameter"
+    Type: AWS::SSM::Parameter
     Properties:
       Description: "PublicSecurityGroup"
-      Name: !Sub "/${ProjectName}/${Environment}/PublicSecurityGroup"
+      Name:  !Sub "/${ProjectName}/${Environment}/PublicSecurityGroup"
       Value: !Ref PublicSecurityGroup
       Type: String
 
   SSMPrivateSecurityGroup:
-    Type: "AWS::SSM::Parameter"
+    Type: AWS::SSM::Parameter
     Properties:
       Description: "PrivateSecurityGroup"
-      Name: !Sub "/${ProjectName}/${Environment}/PrivateSecurityGroup"
+      Name:  !Sub "/${ProjectName}/${Environment}/PrivateSecurityGroup"
       Value: !Ref PrivateSecurityGroup
       Type: String
 
   SSMPrivateSubnetA:
-    Type: "AWS::SSM::Parameter"
+    Type: AWS::SSM::Parameter
     Properties:
       Description: "PrivateSubnetA"
-      Name: !Sub "/${ProjectName}/${Environment}/PrivateSubnetA"
+      Name:  !Sub "/${ProjectName}/${Environment}/PrivateSubnetA"
       Value: !Ref PrivateSubnetA
       Type: String
 
   SSMPrivateSubnetB:
-    Type: "AWS::SSM::Parameter"
+    Type: AWS::SSM::Parameter
     Properties:
       Description: "PrivateSubnetB"
-      Name: !Sub "/${ProjectName}/${Environment}/PrivateSubnetB"
+      Name:  !Sub "/${ProjectName}/${Environment}/PrivateSubnetB"
       Value: !Ref PrivateSubnetB
       Type: String
 
   SSMPrivateSubnetC:
-    Type: "AWS::SSM::Parameter"
+    Type: AWS::SSM::Parameter
     Properties:
       Description: "PrivateSubnetC"
-      Name: !Sub "/${ProjectName}/${Environment}/PrivateSubnetC"
+      Name:  !Sub "/${ProjectName}/${Environment}/PrivateSubnetC"
       Value: !Ref PrivateSubnetC
       Type: String

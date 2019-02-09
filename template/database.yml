@@ -7,19 +7,19 @@ Parameters:
   ProjectName:
     Description: ""
     Type: String
-    Default: "example"
+    Default: example
   Environment:
     Description: ""
     Type: String
-    Default: "dev"
+    Default: dev
   Role:
     Description: ""
     Type: String
-    Default: "default"
+    Default: default
   DomainName:
     Description: ""
     Type: String
-    Default: "example.com"
+    Default: example.com
   MasterUsername:
     Description: ""
     Type: String
@@ -29,7 +29,7 @@ Parameters:
   DBInstanceClass:
     Description: ""
     Type: String
-    Default: "db.t2.medium"
+    Default: db.t2.medium
     AllowedValues:
       - db.t2.medium
       - db.r3.large
@@ -53,57 +53,57 @@ Parameters:
       - false
 
 Conditions:
-  IsMultiAZ: !Equals [ !Ref MultiAZ, "true" ]
+  MultiAZ: !Equals [ !Ref MultiAZ, "true" ]
 
 Resources:
-  DBSubnetGroup:
+  SubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
-      DBSubnetGroupDescription: "DBSubnetGroup"
+      DBSubnetGroupDescription: "SubnetGroup"
       SubnetIds:
         - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSubnetA:1}}'
         - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSubnetB:1}}'
         - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSubnetC:1}}'
 
-  DBClusterParameterGroup:
+  ClusterParameterGroup:
     Type: AWS::RDS::DBClusterParameterGroup
     Properties:
-      Description: ""
-      Family: "aurora5.6"
+      Description: "ClusterParameterGroup"
+      Family: aurora5.6
       Parameters:
-        character_set_database: "utf8"
+        character_set_database: utf8
 
-  DBParameterGroup:
-    Type: "AWS::RDS::DBParameterGroup"
+  ParameterGroup:
+    Type: AWS::RDS::DBParameterGroup
     Properties:
-      Description: ""
-      Family: "aurora5.6"
+      Description: "ParameterGroup"
+      Family: aurora5.6
       Parameters:
         slow_query_log: 1
         long_query_time: 1
 
-  DBCluster:
+  Cluster:
     Type: AWS::RDS::DBCluster
-    DeletionPolicy: "Snapshot"
+    DeletionPolicy: Snapshot
     Properties:
       Name: !Sub "${ProjectName}.${Environment}.${Role}"
-      Engine: "aurora"
-      MasterUsername: !Ref MasterUsername
+      Engine: aurora
+      MasterUsername:     !Ref MasterUsername
       MasterUserPassword: !Ref MasterUserPassword
-      DBSubnetGroupName: !Ref DBSubnetGroup
-      DBClusterParameterGroupName: !Ref DBClusterParameterGroup
+      DBSubnetGroupName:  !Ref SubnetGroup
       DeletionProtection: !Ref DeletionProtection
+      DBClusterParameterGroupName: !Ref ClusterParameterGroup
       VpcSecurityGroupIds:
         - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSecurityGroup:1}}'
 
-  DBInstanceA:
+  InstanceA:
     Type: AWS::RDS::DBInstance
     Properties:
-      Engine: "aurora"
-      DBClusterIdentifier: !Ref DBCluster
-      DBSubnetGroupName: !Ref DBSubnetGroup
-      DBParameterGroupName: !Ref DBParameterGroup
-      DBInstanceClass: !Ref DBInstanceClass
+      Engine: aurora
+      DBClusterIdentifier:  !Ref Cluster
+      DBSubnetGroupName:    !Ref SubnetGroup
+      DBParameterGroupName: !Ref ParameterGroup
+      DBInstanceClass:      !Ref DBInstanceClass
       EnablePerformanceInsights: true
       Tags:
         - Key: ProjectName
@@ -113,15 +113,15 @@ Resources:
         - Key: Role
           Value: !Ref Role
 
-  DBInstanceB:
+  InstanceB:
     Type: AWS::RDS::DBInstance
-    Condition: IsMultiAZ
+    Condition: MultiAZ
     Properties:
-      Engine: "aurora"
-      DBClusterIdentifier: !Ref DBCluster
-      DBSubnetGroupName: !Ref DBSubnetGroup
-      DBParameterGroupName: !Ref DBParameterGroup
-      DBInstanceClass: !Ref DBInstanceClass
+      Engine: aurora
+      DBClusterIdentifier:  !Ref Cluster
+      DBSubnetGroupName:    !Ref SubnetGroup
+      DBParameterGroupName: !Ref ParameterGroup
+      DBInstanceClass:      !Ref DBInstanceClass
       EnablePerformanceInsights: true
       Tags:
         - Key: ProjectName
@@ -132,7 +132,7 @@ Resources:
           Value: !Ref Role
 
   SSMEndpointAddress:
-    Type: "AWS::SSM::Parameter"
+    Type: AWS::SSM::Parameter
     Properties:
       Description: "EndpointAddress"
       Name: !Sub "/${ProjectName}/${Environment}/database/${Role}/EndpointAddress"
@@ -140,7 +140,7 @@ Resources:
       Type: String
 
   SSMReadEndpointAddress:
-    Type: "AWS::SSM::Parameter"
+    Type: AWS::SSM::Parameter
     Properties:
       Description: "ReadEndpointAddress"
       Name: !Sub "/${ProjectName}/${Environment}/database/${Role}/ReadEndpointAddress"
@@ -148,7 +148,7 @@ Resources:
       Type: String
 
   SSMMasterUsername:
-    Type: "AWS::SSM::Parameter"
+    Type: AWS::SSM::Parameter
     Properties:
       Description: "MasterUsername"
       Name: !Sub "/${ProjectName}/${Environment}/database/${Role}/MasterUsername"
@@ -156,7 +156,7 @@ Resources:
       Type: String
 
   SSMMasterUserPassword:
-    Type: "AWS::SSM::Parameter"
+    Type: AWS::SSM::Parameter
     Properties:
       Description: "MasterUserPassword"
       Name: !Sub "/${ProjectName}/${Environment}/database/${Role}/MasterUserPassword"
