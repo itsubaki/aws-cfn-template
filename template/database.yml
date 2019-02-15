@@ -71,7 +71,11 @@ Resources:
       Description: "ClusterParameterGroup"
       Family: aurora5.6
       Parameters:
-        character_set_database: utf8
+        character_set_client:     "utf8mb4"
+        character_set_connection: "utf8mb4"
+        character_set_database:   "utf8mb4"
+        character_set_results:    "utf8mb4"
+        character_set_server:     "utf8mb4"
 
   ParameterGroup:
     Type: AWS::RDS::DBParameterGroup

@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description:
+  AWS Certificate Manager
+
+Parameters:
+  ProjectName:
+    Description: ""
+    Type: String
+  Environment:
+    Description: ""
+    Type: String
+    Default: dev
+  Role:
+    Description: ""
+    Type: String
+    Default: default
+  DomainName:
+    Description: ""
+    Type: String
+    Default: example.com
+  ValidationMethod:
+    Description: "DNS or Email"
+    Type: String
+    Default: "DNS"
+    AllowedValues:
+      - "DNS"
+      - "Email"
+
+Resources:
+  Certificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Sub "*.${ProjectName}.${DomainName}"
+      DomainValidationOptions:
+        - DomainName: !Sub "*.${ProjectName}.${DomainName}"
+          ValidationDomain: !Sub "${ProjectName}.${DomainName}"
+      SubjectAlternativeNames:
+        - !Sub "${ProjectName}.${DomainName}"
+      ValidationMethod: !Ref ValidationMethod

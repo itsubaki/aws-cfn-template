@@ -20,3 +20,123 @@ Parameters:
     Description: ""
     Type: String
     Default: default
+
+Resources:
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub "${Role}-${Environment}"
+      Scheme: internet-facing
+      LoadBalancerAttributes:
+        - Key: access_logs.s3.enabled
+          Value: true
+        - Key: access_logs.s3.bucket
+          Value: !Sub "log.${ProjectName}.${DomainName}"
+        - Key: idle_timeout.timeout_seconds
+          Value: 60
+      SecurityGroups:
+        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PublicSecurityGroup:1}}'
+      Subnets:
+        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PublicSubnetA:1}}'
+        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PublicSubnetB:1}}'
+        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PublicSubnetC:1}}'
+
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub "${Role}-${Environment}"
+      Port: "80"
+      Protocol: "HTTP"
+      VpcId: !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/VPCID:1}}'
+      HealthCheckPath:            !Ref HealthCheckPath
+      HealthCheckIntervalSeconds: !Ref HealthCheckIntervalSeconds
+      HealthCheckTimeoutSeconds:  !Ref HealthCheckTimeoutSeconds
+      HealthyThresholdCount:      !Ref HealthyThresholdCount
+      UnhealthyThresholdCount:    !Ref UnhealthyThresholdCount
+
+  Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: "443"
+      Protocol: "HTTPS"
+      Certificates:
+        - CertificateArn: !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/Certificate:1}}'
+      DefaultActions:
+        - TargetGroupArn: !Ref TargetGroup
+          Type: forward
+
+  ListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
+      Conditions:
+        - Field: path-pattern
+          Values:
+            - "/"
+      ListenerArn: !Ref Listener
+      Priority: 1
+
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref IAMRole
+
+  AutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    CreationPolicy:
+      ResourceSignal:
+        Count:   !Ref DesiredCapacity
+        Timeout: "PT20M"
+      AutoScalingCreationPolicy:
+        MinSuccessfulInstancesPercent: 80
+    UpdatePolicy:
+    AutoScalingReplacingUpdate:
+      WillReplace: true
+    Properties:
+      LaunchConfigurationName: !Ref LaunchConfiguration
+      DesiredCapacity: !Ref DesiredCapacity
+      MaxSize:         !Ref MaxSize
+      MinSize:         !Ref MinSize
+      TargetGroupARNs:
+        - !Ref TargetGroup
+      VPCZoneIdentifier:
+        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSubnetA:1}}'
+        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSubnetB:1}}'
+        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSubnetC:1}}'
+      HealthCheckType: "ELB"
+      HealthCheckGracePeriod: 600
+
+  LaunchConfiguration:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId:      !Ref ImageId
+      InstanceType: !Ref InstanceType
+      KeyName:      !Ref KeyName
+      IamInstanceProfile: !Ref InstanceProfile
+      BlockDeviceMappings:
+        - DeviceName: "/dev/sda1"
+          Ebs:
+            DeleteOnTermination: true
+            VolumeType: "gp2"
+            VolumeSize: 30
+      SecurityGroups:
+        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PublicSecurityGroup:1}}'
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/sh
+          set -x
+
+          # install basic software
+          apt-get -y update
+          apt-get -y install python-pip software-properties-common
+          pip install awscli boto3
+          pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
+          cp -a /usr/local/init/ubuntu/cfn-hup /etc/init.d/cfn-hup
+          chmod u+x /etc/init.d/cfn-hup
+
+
+          /usr/local/bin/cfn-signal -e `cat /tmp/status` --stack ${AWS::StackName} --region ${AWS::Region} --resource AutoScalingGroup

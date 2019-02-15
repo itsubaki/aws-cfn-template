@@ -20,3 +20,73 @@ Parameters:
     Description: ""
     Type: String
     Default: example.com
+  DefaultTTL:
+    Description: ""
+    Type: String
+    Default: 900
+  CertificateArn:
+    Description: ""
+    Type: String
+    Default: ""
+
+Resources:
+  DNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Type: A
+      AliasTarget:
+        DNSName:      !GetAtt Distribution.DomainName
+        HostedZoneId: Z2FDTNDATAQYW2
+      Comment: ""
+      HostedZoneName: !Sub "${ProjectName}.${DomainName}."
+      Name: !Sub "${Role}-${Environment}.${ProjectName}.${DomainName}"
+
+  Distribution:
+    DependsOn: [ "Bucket" ]
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Origins:
+          - DomainName: !Sub "${Role}.${ProjectName}.${DomainName}.s3-website-${AWS::Region}.amazonaws.com"
+            Id: S3Origin
+            CustomOriginConfig:
+              OriginProtocolPolicy: http-only
+        Enabled: true
+        Aliases:
+          - !Sub "${Role}-${Environment}.${ProjectName}.${DomainName}"
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+          ViewerProtocolPolicy: allow-all
+          DefaultTTL: !Ref DefaultTTL
+        ViewerCertificate:
+          SslSupportMethod: sni-only
+          AcmCertificateArn: !Ref CertificateArn
+          MinimumProtocolVersion: TLSv1.2_2018
+        HttpVersion: http2
+
+  Bucket:
+    DeletionPolicy: Retain
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${Role}-${Environment}.${ProjectName}.${DomainName}"
+      VersioningConfiguration:
+        Status: Enabled
+      WebsiteConfiguration:
+        IndexDocument: index.html
+
+  BucketPolicy:
+    Type: "AWS::S3::BucketPolicy"
+    Properties:
+      Bucket: !Sub "${Role}-${Environment}.${ProjectName}.${DomainName}"
+      PolicyDocument:
+        Statement:
+          - Sid: 1
+            Action: s3:GetObject
+            Effect: Allow
+            Principal: "*"
+            Resource:
+              - !Sub "${Bucket.Arn}/*"
