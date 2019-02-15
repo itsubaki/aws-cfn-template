@@ -85,6 +85,47 @@ Resources:
       Roles:
         - !Ref IAMRole
 
+  IAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${Environment}-${Role}"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action:
+              - "sts:AssumeRole"
+            Principal:
+              Service:
+                - "ec2.amazonaws.com"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
+      Policies:
+        - PolicyName: !Sub "${Environment}-${Role}"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "logs:*"
+                  - "ec2:CreateTags"
+                  - "ec2:Describe*"
+                  - "ec2:Stop*"
+                  - "autoscaling:Describe*"
+                  - "elasticloadbalancing:Describe*"
+                  - "elasticloadbalancing:RegisterTargets"
+                  - "elasticloadbalancing:DeregisterTargets"
+                  - "cloudwatch:GetMetricStatistics"
+                  - "sns:Publish"
+                Resource:
+                  - "*"
+              - Effect: "Allow"
+                Action:
+                  - "s3:*"
+                Resource:
+                  - !Sub "arn:aws:s3:::log.${ProjectName}.${DomainName}"
+                  - !Sub "arn:aws:s3:::log.${ProjectName}.${DomainName}/*"
+
   AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     CreationPolicy:
