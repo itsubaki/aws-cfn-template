@@ -20,12 +20,12 @@ Parameters:
     Type: String
     Default: example.com
   ValidationMethod:
-    Description: "DNS or Email"
+    Description: ""
     Type: String
     Default: "DNS"
     AllowedValues:
       - "DNS"
-      - "Email"
+      - "EMAIL"
 
 Resources:
   Certificate:
