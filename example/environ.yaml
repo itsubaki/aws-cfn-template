@@ -1,0 +1,380 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  ProjectName:
+    Description: ""
+    Type: String
+    Default: example
+  Environment:
+    Description: ""
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+  DBMasterUsername:
+    Description: ""
+    Type: String
+    Default: "username"
+  DBMasterUserPassword:
+    Description: ""
+    Type: String
+    Default: "password"
+    MinLength: 8
+    NoEcho: true
+  DBInstanceClass:
+    Description: ""
+    Type: String
+    Default: db.t2.medium
+    AllowedValues:
+      - db.t2.medium
+  DBMultiAZ:
+    Description: ""
+    Type: String
+    Default: false
+    AllowedValues:
+      - true
+      - false
+  ECInstanceClass:
+    Description: ""
+    Type: String
+    Default: cache.t2.medium
+    AllowedValues:
+      - cache.t2.micro
+      - cache.t2.small
+      - cache.t2.medium
+  ECNumCacheClusters:
+    Description: ""
+    Type: Number
+    Default: 1
+    MinValue: 1
+    MaxValue: 6
+
+Conditions:
+  DBMultiAZ: !Equals [ !Ref DBMultiAZ, "true" ]
+  ECMultiAZ: !Not [!Equals [ !Ref ECNumCacheClusters, 1 ] ]
+
+Resources:
+# network
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock:          "10.0.0.0/16"
+      EnableDnsSupport:   true
+      EnableDnsHostnames: true
+      InstanceTenancy:    "default"
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.${Environment}.vpc"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.${Environment}.rt.public"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.${Environment}.rt.private"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.${Environment}.igw"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
+
+  Route:
+    Type: AWS::EC2::Route
+    Properties:
+      GatewayId:    !Ref InternetGateway
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+
+  PublicSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:     !Ref VPC
+      CidrBlock: "10.0.1.0/24"
+      AvailabilityZone: !Select [ "0", !GetAZs ""]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.${Environment}.public.subnet.a"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+
+  PublicSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:     !Ref VPC
+      CidrBlock: "10.0.2.0/24"
+      AvailabilityZone: !Select [ "1", !GetAZs ""]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.${Environment}.public.subnet.b"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+
+  PublicSubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:     !Ref VPC
+      CidrBlock: "10.0.3.0/24"
+      AvailabilityZone: !Select [ "2", !GetAZs ""]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.${Environment}.public.subnet.c"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+
+  PrivateSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:     !Ref VPC
+      CidrBlock: "10.0.4.0/24"
+      AvailabilityZone: !Select [ "0", !GetAZs ""]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.${Environment}.private.subnet.a"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+
+  PrivateSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:     !Ref VPC
+      CidrBlock: "10.0.5.0/24"
+      AvailabilityZone: !Select [ "1", !GetAZs ""]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.${Environment}.private.subnet.b"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+
+  PrivateSubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:     !Ref VPC
+      CidrBlock: "10.0.6.0/24"
+      AvailabilityZone: !Select [ "2", !GetAZs ""]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.${Environment}.private.subnet.c"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+
+  PublicSubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:     !Ref PublicSubnetA
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnetBRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:     !Ref PublicSubnetB
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnetCRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:     !Ref PublicSubnetC
+      RouteTableId: !Ref PublicRouteTable
+
+  PrivateSubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:     !Ref PrivateSubnetA
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateSubnetBRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:     !Ref PrivateSubnetB
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateSubnetCRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:     !Ref PrivateSubnetC
+      RouteTableId: !Ref PrivateRouteTable
+
+  PublicSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "PublicSecurityGroup"
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.${Environment}.sg.public"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+
+  PrivateSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "PrivateSecurityGroup"
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}.${Environment}.sg.private"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+
+# database
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: "DBSubnetGroup"
+      SubnetIds:
+        - !Ref PrivateSubnetA
+        - !Ref PrivateSubnetB
+        - !Ref PrivateSubnetC
+
+  DBClusterParameterGroup:
+    Type: AWS::RDS::DBClusterParameterGroup
+    Properties:
+      Description: "ClusterParameterGroup"
+      Family: aurora5.6
+      Parameters:
+        character_set_client:     "utf8mb4"
+        character_set_connection: "utf8mb4"
+        character_set_database:   "utf8mb4"
+        character_set_results:    "utf8mb4"
+        character_set_server:     "utf8mb4"
+
+  DBParameterGroup:
+    Type: AWS::RDS::DBParameterGroup
+    Properties:
+      Description: "ParameterGroup"
+      Family: aurora5.6
+      Parameters:
+        slow_query_log: 1
+        long_query_time: 1
+
+  DBCluster:
+    Type: AWS::RDS::DBCluster
+    Properties:
+      Engine: aurora
+      MasterUsername:     !Ref DBMasterUsername
+      MasterUserPassword: !Ref DBMasterUserPassword
+      DBSubnetGroupName:  !Ref DBSubnetGroup
+      DeletionProtection: false
+      DBClusterParameterGroupName: !Ref DBClusterParameterGroup
+      VpcSecurityGroupIds:
+        - !Ref PrivateSecurityGroup
+
+  InstanceA:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      Engine: aurora
+      DBClusterIdentifier:  !Ref DBCluster
+      DBSubnetGroupName:    !Ref DBSubnetGroup
+      DBParameterGroupName: !Ref DBParameterGroup
+      DBInstanceClass:      !Ref DBInstanceClass
+      Tags:
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+
+  InstanceB:
+    Type: AWS::RDS::DBInstance
+    Condition: DBMultiAZ
+    Properties:
+      Engine: aurora
+      DBClusterIdentifier:  !Ref DBCluster
+      DBSubnetGroupName:    !Ref DBSubnetGroup
+      DBParameterGroupName: !Ref DBParameterGroup
+      DBInstanceClass:      !Ref DBInstanceClass
+      Tags:
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+
+# cache
+  ECSubnetGroup:
+    Type: AWS::ElastiCache::SubnetGroup
+    Properties:
+      Description: "SubnetGroup"
+      SubnetIds:
+        - !Ref PrivateSubnetA
+        - !Ref PrivateSubnetB
+        - !Ref PrivateSubnetC
+
+  ECParameterGroup:
+    Type: AWS::ElastiCache::ParameterGroup
+    Properties:
+      Description: "ParameterGroup"
+      CacheParameterGroupFamily: "redis5.0"
+      Properties:
+        timeout:   600
+        databases: 1024
+
+  ECReplicationGroup:
+    DependsOn:
+      - ECSubnetGroup
+      - ECParameterGroup
+    Type: AWS::ElastiCache::ReplicationGroup
+    Properties:
+      ReplicationGroupDescription: "ReplicationGroup"
+      ReplicationGroupId:          !Sub "${ProjectName}-${Environment}"
+      AutomaticFailoverEnabled:    !If [ECMultiAZ, true, false]
+      CacheNodeType:               !Ref ECInstanceClass
+      CacheParameterGroupName:     !Ref ECParameterGroup
+      CacheSubnetGroupName:        !Ref ECSubnetGroup
+      Engine:                      "redis"
+      EngineVersion:               "5.0.0"
+      NumCacheClusters:            !Ref ECNumCacheClusters
+      SecurityGroupIds:
+        - !Ref PrivateSecurityGroup
