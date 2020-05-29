@@ -1,0 +1,221 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description:
+  AWS Serverless API Resource
+
+Parameters:
+  ProjectName:
+    Description: ""
+    Type: String
+    Default: example
+  Environment:
+    Description: ""
+    Type: String
+    Default: dev
+  DomainName:
+    Description: ""
+    Type: String
+    Default: example.com
+  Role:
+    Description: ""
+    Type: String
+    Default: default
+  CertificateArn:
+    Description: ""
+    Type: String
+    Default: ""
+  S3Bucket:
+    Description: ""
+    Type: String
+  S3Key:
+    Description: ""
+    Type: String
+
+Resources:
+ IAMRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Sub "${Role}-${Environment}"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action:
+              - "sts:AssumeRole"
+            Principal:
+              Service:
+                - "apigateway.amazonaws.com"
+                - "lambda.amazonaws.com"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaKinesisExecutionRole"
+        - "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+      Policies:
+        - PolicyName: !Sub "${Role}-${Environment}"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "logs:*"
+                Resource:
+                  - "*"
+              - Effect: "Allow"
+                Action: "kinesis:*"
+                Resource:
+                  - !Sub "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${Role}-${Environment}.*"
+
+  KinesisStream:
+    Type: "AWS::Kinesis::Stream"
+    Properties:
+      Name: !Sub "${Role}-${Environment}"
+      ShardCount: !Ref ShardCount
+      Tags:
+        - Key: Name
+          Value: !Sub "${Role}-${Environment}"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Role
+          Value: !Ref Role
+        - Key: DomainName
+          Value: !Ref DomainName
+
+  Lambda:
+    DependsOn:
+      - "KinesisStream"
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: !Sub "${Role}-${Environment}"
+      Description: !Ref Role
+      Handler: handle
+      Runtime: go1.x
+      Timeout: 300
+      Role: !GetAtt IAMRole.Arn
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Ref S3Key
+      Environment:
+        Variables:
+          ENVIRONMENT: !Sub "${Environment}"
+      Tags:
+        - Key: Name
+          Value: !Sub "${Role}-${Environment}"
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Role
+          Value: !Ref Role
+        - Key: DomainName
+          Value: !Ref DomainName
+
+  EventSourceMapping:
+    Type: "AWS::Lambda::EventSourceMapping"
+    Properties:
+      EventSourceArn: !GetAtt KinesisStream.Arn
+      FunctionName: !GetAtt Lambda.Arn
+      StartingPosition: "TRIM_HORIZON"
+      BatchSize: 10000
+
+  ApiGateway:
+    Type: "AWS::ApiGateway::RestApi"
+    Properties:
+      Description: !Ref Role
+      Name: !Sub "${Role}-${Environment}.${ProjectName}.${DomainName}"
+      Body:
+        swagger: "2.0"
+        info:
+          version: "18.11.1"
+        host: !Sub "${Role}-${Environment}.${ProjectName}.${DomainName}."
+        schemes:
+          - "https"
+        x-amazon-apigateway-request-validator: "all"
+        paths:
+          "/":
+            post:
+              parameters:
+                - in: "body"
+                  name: "ArrayOfMODEL7f71fc"
+                  required: true
+                  schema:
+                    $ref: "#/definitions/ArrayOfMODEL7f71fc"
+              responses:
+                "200":
+                  description: "200 response"
+              x-amazon-apigateway-integration:
+                credentials: !GetAtt IAMRole.Arn
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:kinesis:action/PutRecord"
+                responses:
+                  default:
+                    statusCode: "200"
+                    responseTemplates:
+                      application/json: "{\"status\":\"OK\"}"
+                requestTemplates:
+                  application/json: !Sub "{ \"StreamName\": \"${KinesisStream}\", \"Data\": \"$util.base64Encode($input.body)\", \"PartitionKey\": \"$context.requestId\" }"
+                passthroughBehavior: "when_no_templates"
+                httpMethod: "POST"
+                type: "aws"
+        definitions:
+          ArrayOfMODEL7f71fc:
+            type: "array"
+            items:
+              type: "object"
+              properties:
+                project:
+                  type: "string"
+                  minLength: 1
+                environment:
+                  type: "string"
+                tag:
+                  type: "string"
+                  minLength: 1
+                created:
+                  type: "string"
+                  format: "date-time"
+                body:
+                  type: "string"
+              required:
+                - project
+                - environment
+                - tag
+                - created
+                - body
+        x-amazon-apigateway-request-validators:
+          all:
+            validateRequestParameters: false
+            validateRequestBody: true
+
+  Deployment:
+    DependsOn:
+      - "ApiGatewayRestAPI"
+    Type: "AWS::ApiGateway::Deployment"
+    Properties:
+      RestApiId: !Ref ApiGateway
+      StageName: !Ref Environment
+
+  DomainName:
+    Type: "AWS::ApiGateway::DomainName"
+    Properties:
+      CertificateArn: !Ref CertificateArn
+      DomainName: !Sub "${Role}-${Environment}.${ProjectName}.${DomainName}"
+
+  BasePathMapping:
+    DependsOn:
+      - "Deployment"
+    Type: "AWS::ApiGateway::BasePathMapping"
+    Properties:
+      DomainName: !Ref DomainName
+      RestApiId: !Ref ApiGateway
+      Stage: !Ref Environment
+
+  Route53DNSRecord:
+    Type: "AWS::Route53::RecordSet"
+    Properties:
+      Type: A
+      HostedZoneName: !Sub "${ProjectName}.${DomainName}."
+      Name: !Sub "${FrontendID}-clientlogs-${Role}.${ProjectName}.${DomainName}."
+      AliasTarget:
+        DNSName: !GetAtt DomainName.DistributionDomainName
+        HostedZoneId: "Z2FDTNDATAQYW2"
