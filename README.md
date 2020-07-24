@@ -2,9 +2,10 @@
 
 ## Namespace Design
 
- - ProjectName
+ - ProductName
  - Environment
  - Role
+ - (optional) DomainName
 
 ## No ImportValue
 

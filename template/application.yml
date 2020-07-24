@@ -4,7 +4,7 @@ Description:
   AWS Application Resource
 
 Parameters:
-  ProjectName:
+  ProductName:
     Description: ""
     Type: String
     Default: example
@@ -25,29 +25,29 @@ Resources:
   LoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
-      Name: !Sub "${Role}-${Environment}"
+      Name: !Sub "${Role}-${Environment}-${ProductName}"
       Scheme: internet-facing
       LoadBalancerAttributes:
         - Key: access_logs.s3.enabled
           Value: true
         - Key: access_logs.s3.bucket
-          Value: !Sub "log.${ProjectName}.${DomainName}"
+          Value: !Sub "log.${ProductName}.${DomainName}"
         - Key: idle_timeout.timeout_seconds
           Value: 60
       SecurityGroups:
-        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PublicSecurityGroup:1}}'
+        - !Sub '{{resolve:ssm:/${ProductName}/${Environment}/PublicSecurityGroup:1}}'
       Subnets:
-        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PublicSubnetA:1}}'
-        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PublicSubnetB:1}}'
-        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PublicSubnetC:1}}'
+        - !Sub '{{resolve:ssm:/${ProductName}/${Environment}/PublicSubnetA:1}}'
+        - !Sub '{{resolve:ssm:/${ProductName}/${Environment}/PublicSubnetB:1}}'
+        - !Sub '{{resolve:ssm:/${ProductName}/${Environment}/PublicSubnetC:1}}'
 
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      Name: !Sub "${Role}-${Environment}"
+      Name: !Sub "${Role}-${Environment}-${ProductName}"
       Port: "80"
       Protocol: "HTTP"
-      VpcId: !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/VPCID:1}}'
+      VpcId: !Sub '{{resolve:ssm:/${ProductName}/${Environment}/VPCID:1}}'
       HealthCheckPath:            !Ref HealthCheckPath
       HealthCheckIntervalSeconds: !Ref HealthCheckIntervalSeconds
       HealthCheckTimeoutSeconds:  !Ref HealthCheckTimeoutSeconds
@@ -61,7 +61,7 @@ Resources:
       Port: "443"
       Protocol: "HTTPS"
       Certificates:
-        - CertificateArn: !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/Certificate:1}}'
+        - CertificateArn: !Sub '{{resolve:ssm:/${ProductName}/${Environment}/Certificate:1}}'
       DefaultActions:
         - TargetGroupArn: !Ref TargetGroup
           Type: forward
@@ -88,7 +88,7 @@ Resources:
   IAMRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub "${Environment}-${Role}"
+      RoleName: !Sub "${Role}-${Environment}-${ProductName}"
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -101,7 +101,7 @@ Resources:
       ManagedPolicyArns:
         - "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
       Policies:
-        - PolicyName: !Sub "${Environment}-${Role}"
+        - PolicyName: !Sub "${Role}-${Environment}-${ProductName}"
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -123,8 +123,8 @@ Resources:
                 Action:
                   - "s3:*"
                 Resource:
-                  - !Sub "arn:aws:s3:::log.${ProjectName}.${DomainName}"
-                  - !Sub "arn:aws:s3:::log.${ProjectName}.${DomainName}/*"
+                  - !Sub "arn:aws:s3:::log-${Environment}.${ProductName}.${DomainName}"
+                  - !Sub "arn:aws:s3:::log-${Environment}.${ProductName}.${DomainName}/*"
 
   AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
@@ -145,9 +145,9 @@ Resources:
       TargetGroupARNs:
         - !Ref TargetGroup
       VPCZoneIdentifier:
-        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSubnetA:1}}'
-        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSubnetB:1}}'
-        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSubnetC:1}}'
+        - !Sub '{{resolve:ssm:/${ProductName}/${Environment}/PrivateSubnetA:1}}'
+        - !Sub '{{resolve:ssm:/${ProductName}/${Environment}/PrivateSubnetB:1}}'
+        - !Sub '{{resolve:ssm:/${ProductName}/${Environment}/PrivateSubnetC:1}}'
       HealthCheckType: "ELB"
       HealthCheckGracePeriod: 600
 
@@ -165,7 +165,7 @@ Resources:
             VolumeType: "gp2"
             VolumeSize: 30
       SecurityGroups:
-        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PublicSecurityGroup:1}}'
+        - !Sub '{{resolve:ssm:/${ProductName}/${Environment}/PublicSecurityGroup:1}}'
       UserData:
         Fn::Base64: !Sub |
           #!/bin/sh
@@ -178,6 +178,5 @@ Resources:
           pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
           cp -a /usr/local/init/ubuntu/cfn-hup /etc/init.d/cfn-hup
           chmod u+x /etc/init.d/cfn-hup
-
 
           /usr/local/bin/cfn-signal -e `cat /tmp/status` --stack ${AWS::StackName} --region ${AWS::Region} --resource AutoScalingGroup

@@ -4,7 +4,7 @@ Description:
   AWS Serverless API Resource
 
 Parameters:
-  ProjectName:
+  ProductName:
     Description: ""
     Type: String
     Default: example
@@ -73,8 +73,8 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${Role}-${Environment}"
-        - Key: ProjectName
-          Value: !Ref ProjectName
+        - Key: ProductName
+          Value: !Ref ProductName
         - Key: Environment
           Value: !Ref Environment
         - Key: Role
@@ -102,8 +102,8 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${Role}-${Environment}"
-        - Key: ProjectName
-          Value: !Ref ProjectName
+        - Key: ProductName
+          Value: !Ref ProductName
         - Key: Environment
           Value: !Ref Environment
         - Key: Role
@@ -123,12 +123,12 @@ Resources:
     Type: "AWS::ApiGateway::RestApi"
     Properties:
       Description: !Ref Role
-      Name: !Sub "${Role}-${Environment}.${ProjectName}.${DomainName}"
+      Name: !Sub "${Role}-${Environment}.${ProductName}.${DomainName}"
       Body:
         swagger: "2.0"
         info:
           version: "18.11.1"
-        host: !Sub "${Role}-${Environment}.${ProjectName}.${DomainName}."
+        host: !Sub "${Role}-${Environment}.${ProductName}.${DomainName}."
         schemes:
           - "https"
         x-amazon-apigateway-request-validator: "all"
@@ -199,7 +199,7 @@ Resources:
     Type: "AWS::ApiGateway::DomainName"
     Properties:
       CertificateArn: !Ref CertificateArn
-      DomainName: !Sub "${Role}-${Environment}.${ProjectName}.${DomainName}"
+      DomainName: !Sub "${Role}-${Environment}.${ProductName}.${DomainName}"
 
   BasePathMapping:
     DependsOn:
@@ -214,8 +214,8 @@ Resources:
     Type: "AWS::Route53::RecordSet"
     Properties:
       Type: A
-      HostedZoneName: !Sub "${ProjectName}.${DomainName}."
-      Name: !Sub "${FrontendID}-clientlogs-${Role}.${ProjectName}.${DomainName}."
+      HostedZoneName: !Sub "${ProductName}.${DomainName}."
+      Name: !Sub "${FrontendID}-clientlogs-${Role}.${ProductName}.${DomainName}."
       AliasTarget:
         DNSName: !GetAtt DomainName.DistributionDomainName
         HostedZoneId: "Z2FDTNDATAQYW2"

@@ -4,7 +4,7 @@ Description:
   AWS Content Delivery Network Resource
 
 Parameters:
-  ProjectName:
+  ProductName:
     Description: ""
     Type: String
     Default: example
@@ -38,8 +38,8 @@ Resources:
         DNSName:      !GetAtt Distribution.DomainName
         HostedZoneId: Z2FDTNDATAQYW2
       Comment: ""
-      HostedZoneName: !Sub "${ProjectName}.${DomainName}."
-      Name: !Sub "${Role}-${Environment}.${ProjectName}.${DomainName}"
+      HostedZoneName: !Sub "${ProductName}.${DomainName}."
+      Name: !Sub "${Role}-${Environment}.${ProductName}.${DomainName}"
 
   Distribution:
     DependsOn: [ "Bucket" ]
@@ -47,13 +47,13 @@ Resources:
     Properties:
       DistributionConfig:
         Origins:
-          - DomainName: !Sub "${Role}.${ProjectName}.${DomainName}.s3-website-${AWS::Region}.amazonaws.com"
+          - DomainName: !Sub "${Role}-${Environment}.${ProductName}.${DomainName}.s3-website-${AWS::Region}.amazonaws.com"
             Id: S3Origin
             CustomOriginConfig:
               OriginProtocolPolicy: http-only
         Enabled: true
         Aliases:
-          - !Sub "${Role}-${Environment}.${ProjectName}.${DomainName}"
+          - !Sub "${Role}-${Environment}.${ProductName}.${DomainName}"
         DefaultCacheBehavior:
           TargetOriginId: S3Origin
           ForwardedValues:
@@ -72,7 +72,7 @@ Resources:
     DeletionPolicy: Retain
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub "${Role}-${Environment}.${ProjectName}.${DomainName}"
+      BucketName: !Sub "${Role}-${Environment}.${ProductName}.${DomainName}"
       VersioningConfiguration:
         Status: Enabled
       WebsiteConfiguration:
@@ -81,7 +81,7 @@ Resources:
   BucketPolicy:
     Type: "AWS::S3::BucketPolicy"
     Properties:
-      Bucket: !Sub "${Role}-${Environment}.${ProjectName}.${DomainName}"
+      Bucket: !Sub "${Role}-${Environment}.${ProductName}.${DomainName}"
       PolicyDocument:
         Statement:
           - Sid: 1

@@ -4,7 +4,7 @@ Description:
   AWS Cache Resource
 
 Parameters:
-  ProjectName:
+  ProductName:
     Description: ""
     Type: String
     Default: example
@@ -74,9 +74,9 @@ Resources:
     Properties:
       Description: "SubnetGroup"
       SubnetIds:
-        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSubnetA:1}}'
-        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSubnetB:1}}'
-        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSubnetC:1}}'
+        - !Sub '{{resolve:ssm:/${ProductName}/${Environment}/PrivateSubnetA:1}}'
+        - !Sub '{{resolve:ssm:/${ProductName}/${Environment}/PrivateSubnetB:1}}'
+        - !Sub '{{resolve:ssm:/${ProductName}/${Environment}/PrivateSubnetC:1}}'
 
   ParameterGroup:
     Type: AWS::ElastiCache::ParameterGroup
@@ -95,7 +95,7 @@ Resources:
     DeletionPolicy: Snapshot
     Properties:
       ReplicationGroupDescription: "ReplicationGroup"
-      ReplicationGroupId:          !Sub "${ProjectName}.${Environment}.${Role}"
+      ReplicationGroupId:          !Sub "${ProductName}.${Environment}.${Role}"
       AutomaticFailoverEnabled:    !If [MultiAZ, true, false]
       CacheNodeType:               !Ref CacheNodeType
       CacheParameterGroupName:     !Ref ParameterGroup
@@ -104,12 +104,12 @@ Resources:
       EngineVersion:               !Ref EngineVersion
       NumCacheClusters:            !Ref NumCacheClusters
       SecurityGroupIds:
-        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSecurityGroup:1}}'
+        - !Sub '{{resolve:ssm:/${ProductName}/${Environment}/PrivateSecurityGroup:1}}'
 
   SSMPrimaryEndPointAddress:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "EndpointAddress"
-      Name: !Sub "/${ProjectName}/${Environment}/cache/${Role}/PrimaryEndPointAddress"
+      Name: !Sub "/${ProductName}/${Environment}/cache/${Role}/PrimaryEndPointAddress"
       Value: !GetAtt ReplicationGroup.PrimaryEndPoint.Address
       Type: String

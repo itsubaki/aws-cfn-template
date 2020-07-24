@@ -4,7 +4,7 @@ Description:
   AWS Certificate Manager
 
 Parameters:
-  ProjectName:
+  ProductName:
     Description: ""
     Type: String
   Environment:
@@ -31,10 +31,10 @@ Resources:
   Certificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
-      DomainName: !Sub "*.${ProjectName}.${DomainName}"
+      DomainName: !Sub "*.${ProductName}.${DomainName}"
       DomainValidationOptions:
-        - DomainName: !Sub "*.${ProjectName}.${DomainName}"
-          ValidationDomain: !Sub "${ProjectName}.${DomainName}"
+        - DomainName: !Sub "*.${ProductName}.${DomainName}"
+          ValidationDomain: !Sub "${ProductName}.${DomainName}"
       SubjectAlternativeNames:
-        - !Sub "${ProjectName}.${DomainName}"
+        - !Sub "${ProductName}.${DomainName}"
       ValidationMethod: !Ref ValidationMethod

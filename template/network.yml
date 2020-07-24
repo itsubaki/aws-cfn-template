@@ -4,7 +4,7 @@ Description:
   AWS Network Resource
 
 Parameters:
-  ProjectName:
+  ProductName:
     Description: ""
     Type: String
     Default: example
@@ -72,7 +72,7 @@ Metadata:
       - Label:
           default: "Project Configuration"
         Parameters:
-          - ProjectName
+          - ProductName
           - Environment
           - DomainName
       - Label:
@@ -93,8 +93,8 @@ Metadata:
           - PrivateSubnetCCidrBlock
 
 Outputs:
-  ProjectName:
-    Value: !Ref ProjectName
+  ProductName:
+    Value: !Ref ProductName
   Environment:
     Value: !Ref Environment
   DomainName:
@@ -103,85 +103,85 @@ Outputs:
     Value: !Ref VPC
 
 Resources:
-  # HostedZone:
-  #   Type: AWS::Route53::HostedZone
-  #   Properties:
-  #     HostedZoneConfig:
-  #       Comment: ""
-  #     Name: !Sub ${ProjectName}.${DomainName}.
-  #
-  # Certificate:
-  #   Type: AWS::CertificateManager::Certificate
-  #   Properties:
-  #     DomainName: !Sub *.${ProjectName}.${DomainName}
-  #     DomainValidationOptions:
-  #       - DomainName: !Sub *.${ProjectName}.${DomainName}
-  #         ValidationDomain: !Ref DomainName
-  #     SubjectAlternativeNames:
-  #       - !Sub ${ProjectName}.${DomainName}
-  #
-  # CloudTrailS3Bucket:
-  #   Type: AWS::S3::Bucket
-  #   DeletionPolicy: Retain
-  #   Properties:
-  #     BucketName: !Sub trail.${ProjectName}.${DomainName}
-  #     Tags:
-  #       - Key: Name
-  #         Value: !Sub trail.${ProjectName}.${DomainName}
-  #       - Key: ProjectName
-  #         Value: !Ref ProjectName
-  #       - Key: Environment
-  #         Value: !Ref Environment
-  #
-  # CloudTrailS3BucketPolicy:
-  #   DependsOn: S3BucketLog
-  #   Type: AWS::S3::BucketPolicy
-  #   Properties:
-  #     Bucket: !Ref CloudTrailS3Bucket
-  #     PolicyDocument:
-  #       Version: 2012-10-17
-  #       Statement:
-  #         - Sid: ALBLogBucketPolicy
-  #           Effect: Allow
-  #           Principal:
-  #             AWS:
-  #               - 582318560864 # ap-northeast-1
-  #               - 127311923021 # us-east-1
-  #               - 033677994240 # us-east-2
-  #               - 027434742980 # us-west-1
-  #               - 797873946194 # us-west-2
-  #         - Sid: AWSCloudTrailAclCheck
-  #           Effect: Allow
-  #           Principal:
-  #             Service: cloudtrail.amazonaws.com
-  #           Action: s3:GetBucketAcl
-  #           Resource: !Sub arn:aws:s3:::${CloudTrailS3Bucket}
-  #         - Sid: AWSCloudTrailWrite
-  #           Effect: Allow
-  #           Principal:
-  #             Service: cloudtrail.amazonaws.com
-  #           Action: s3:PutObject
-  #           Resource: !Sub arn:aws:s3:::${CloudTrailS3Bucket}/AWSLogs/${AWS::AccountId}/*
-  #           Condition:
-  #             StringEquals:
-  #               s3:x-amz-acl: bucket-owner-full-control
-  #
-  # CloudTrail:
-  #   DependsOn: BucketPolicy
-  #   Type: AWS::CloudTrail::Trail
-  #   Properties:
-  #     S3BucketName: !Sub trail.${ProjectName}.${DomainName}
-  #     IncludeGlobalServiceEvents: true
-  #     EnableLogFileValidation: true
-  #     IsMultiRegionTrail: true
-  #     IsLogging: true
-  #     Tags:
-  #       - Key: Name
-  #         Value: !Sub trail.${ProjectName}.${DomainName}
-  #       - Key: ProjectName
-  #         Value: !Ref ProjectName
-  #       - Key: Environment
-  #         Value: !Ref Environment
+  HostedZone:
+    Type: AWS::Route53::HostedZone
+    Properties:
+      HostedZoneConfig:
+        Comment: ""
+      Name: !Sub ${ProductName}.${DomainName}.
+
+  Certificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Sub *.${ProductName}.${DomainName}
+      DomainValidationOptions:
+        - DomainName: !Sub *.${ProductName}.${DomainName}
+          ValidationDomain: !Ref DomainName
+      SubjectAlternativeNames:
+        - !Sub ${ProductName}.${DomainName}
+
+  CloudTrailS3Bucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: !Sub trail.${ProductName}.${DomainName}
+      Tags:
+        - Key: Name
+          Value: !Sub trail.${ProductName}.${DomainName}
+        - Key: ProductName
+          Value: !Ref ProductName
+        - Key: Environment
+          Value: !Ref Environment
+
+  CloudTrailS3BucketPolicy:
+    DependsOn: S3BucketLog
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref CloudTrailS3Bucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: ALBLogBucketPolicy
+            Effect: Allow
+            Principal:
+              AWS:
+                - 582318560864 # ap-northeast-1
+                - 127311923021 # us-east-1
+                - 033677994240 # us-east-2
+                - 027434742980 # us-west-1
+                - 797873946194 # us-west-2
+          - Sid: AWSCloudTrailAclCheck
+            Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action: s3:GetBucketAcl
+            Resource: !Sub arn:aws:s3:::${CloudTrailS3Bucket}
+          - Sid: AWSCloudTrailWrite
+            Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action: s3:PutObject
+            Resource: !Sub arn:aws:s3:::${CloudTrailS3Bucket}/AWSLogs/${AWS::AccountId}/*
+            Condition:
+              StringEquals:
+                s3:x-amz-acl: bucket-owner-full-control
+
+  CloudTrail:
+    DependsOn: BucketPolicy
+    Type: AWS::CloudTrail::Trail
+    Properties:
+      S3BucketName: !Sub trail.${ProductName}.${DomainName}
+      IncludeGlobalServiceEvents: true
+      EnableLogFileValidation: true
+      IsMultiRegionTrail: true
+      IsLogging: true
+      Tags:
+        - Key: Name
+          Value: !Sub trail.${ProductName}.${DomainName}
+        - Key: ProductName
+          Value: !Ref ProductName
+        - Key: Environment
+          Value: !Ref Environment
 
   VPC:
     Type: AWS::EC2::VPC
@@ -192,9 +192,9 @@ Resources:
       InstanceTenancy:    !Ref InstanceTenancy
       Tags:
         - Key: Name
-          Value: !Sub "${ProjectName}.${Environment}.vpc"
-        - Key: ProjectName
-          Value: !Ref ProjectName
+          Value: !Sub "${ProductName}.${Environment}.vpc"
+        - Key: ProductName
+          Value: !Ref ProductName
         - Key: Environment
           Value: !Ref Environment
 
@@ -204,9 +204,9 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Sub "${ProjectName}.${Environment}.rt.public"
-        - Key: ProjectName
-          Value: !Ref ProjectName
+          Value: !Sub "${ProductName}.${Environment}.rt.public"
+        - Key: ProductName
+          Value: !Ref ProductName
         - Key: Environment
           Value: !Ref Environment
 
@@ -216,9 +216,9 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Sub "${ProjectName}.${Environment}.rt.private"
-        - Key: ProjectName
-          Value: !Ref ProjectName
+          Value: !Sub "${ProductName}.${Environment}.rt.private"
+        - Key: ProductName
+          Value: !Ref ProductName
         - Key: Environment
           Value: !Ref Environment
 
@@ -227,9 +227,9 @@ Resources:
     Properties:
       Tags:
         - Key: Name
-          Value: !Sub "${ProjectName}.${Environment}.igw"
-        - Key: ProjectName
-          Value: !Ref ProjectName
+          Value: !Sub "${ProductName}.${Environment}.igw"
+        - Key: ProductName
+          Value: !Ref ProductName
         - Key: Environment
           Value: !Ref Environment
 
@@ -255,9 +255,9 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub "${ProjectName}.${Environment}.public.subnet.a"
-        - Key: ProjectName
-          Value: !Ref ProjectName
+          Value: !Sub "${ProductName}.${Environment}.public.subnet.a"
+        - Key: ProductName
+          Value: !Ref ProductName
         - Key: Environment
           Value: !Ref Environment
 
@@ -270,9 +270,9 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub "${ProjectName}.${Environment}.public.subnet.b"
-        - Key: ProjectName
-          Value: !Ref ProjectName
+          Value: !Sub "${ProductName}.${Environment}.public.subnet.b"
+        - Key: ProductName
+          Value: !Ref ProductName
         - Key: Environment
           Value: !Ref Environment
 
@@ -285,9 +285,9 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub "${ProjectName}.${Environment}.public.subnet.c"
-        - Key: ProjectName
-          Value: !Ref ProjectName
+          Value: !Sub "${ProductName}.${Environment}.public.subnet.c"
+        - Key: ProductName
+          Value: !Ref ProductName
         - Key: Environment
           Value: !Ref Environment
 
@@ -300,9 +300,9 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub "${ProjectName}.${Environment}.private.subnet.a"
-        - Key: ProjectName
-          Value: !Ref ProjectName
+          Value: !Sub "${ProductName}.${Environment}.private.subnet.a"
+        - Key: ProductName
+          Value: !Ref ProductName
         - Key: Environment
           Value: !Ref Environment
 
@@ -315,9 +315,9 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub "${ProjectName}.${Environment}.private.subnet.b"
-        - Key: ProjectName
-          Value: !Ref ProjectName
+          Value: !Sub "${ProductName}.${Environment}.private.subnet.b"
+        - Key: ProductName
+          Value: !Ref ProductName
         - Key: Environment
           Value: !Ref Environment
 
@@ -330,9 +330,9 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub "${ProjectName}.${Environment}.private.subnet.c"
-        - Key: ProjectName
-          Value: !Ref ProjectName
+          Value: !Sub "${ProductName}.${Environment}.private.subnet.c"
+        - Key: ProductName
+          Value: !Ref ProductName
         - Key: Environment
           Value: !Ref Environment
 
@@ -379,9 +379,9 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Sub "${ProjectName}.${Environment}.sg.public"
-        - Key: ProjectName
-          Value: !Ref ProjectName
+          Value: !Sub "${ProductName}.${Environment}.sg.public"
+        - Key: ProductName
+          Value: !Ref ProductName
         - Key: Environment
           Value: !Ref Environment
 
@@ -392,9 +392,9 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Sub "${ProjectName}.${Environment}.sg.private"
-        - Key: ProjectName
-          Value: !Ref ProjectName
+          Value: !Sub "${ProductName}.${Environment}.sg.private"
+        - Key: ProductName
+          Value: !Ref ProductName
         - Key: Environment
           Value: !Ref Environment
 
@@ -402,7 +402,7 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "DomainName"
-      Name: !Sub "/${ProjectName}/${Environment}/DomainName"
+      Name: !Sub "/${ProductName}/${Environment}/DomainName"
       Value: !Ref DomainName
       Type: String
 
@@ -410,7 +410,7 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "VPC"
-      Name:  !Sub "/${ProjectName}/${Environment}/VPCID"
+      Name:  !Sub "/${ProductName}/${Environment}/VPCID"
       Value: !Ref VPC
       Type: String
 
@@ -418,7 +418,7 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "PublicRouteTable"
-      Name:  !Sub "/${ProjectName}/${Environment}/PublicRouteTable"
+      Name:  !Sub "/${ProductName}/${Environment}/PublicRouteTable"
       Value: !Ref PublicRouteTable
       Type: String
 
@@ -426,7 +426,7 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "PrivateRouteTable"
-      Name:  !Sub "/${ProjectName}/${Environment}/PrivateRouteTable"
+      Name:  !Sub "/${ProductName}/${Environment}/PrivateRouteTable"
       Value: !Ref PrivateRouteTable
       Type: String
 
@@ -434,7 +434,7 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "PublicSecurityGroup"
-      Name:  !Sub "/${ProjectName}/${Environment}/PublicSecurityGroup"
+      Name:  !Sub "/${ProductName}/${Environment}/PublicSecurityGroup"
       Value: !Ref PublicSecurityGroup
       Type: String
 
@@ -442,7 +442,7 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "PrivateSecurityGroup"
-      Name:  !Sub "/${ProjectName}/${Environment}/PrivateSecurityGroup"
+      Name:  !Sub "/${ProductName}/${Environment}/PrivateSecurityGroup"
       Value: !Ref PrivateSecurityGroup
       Type: String
 
@@ -450,7 +450,7 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "PrivateSubnetA"
-      Name:  !Sub "/${ProjectName}/${Environment}/PrivateSubnetA"
+      Name:  !Sub "/${ProductName}/${Environment}/PrivateSubnetA"
       Value: !Ref PrivateSubnetA
       Type: String
 
@@ -458,7 +458,7 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "PrivateSubnetB"
-      Name:  !Sub "/${ProjectName}/${Environment}/PrivateSubnetB"
+      Name:  !Sub "/${ProductName}/${Environment}/PrivateSubnetB"
       Value: !Ref PrivateSubnetB
       Type: String
 
@@ -466,6 +466,6 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "PrivateSubnetC"
-      Name:  !Sub "/${ProjectName}/${Environment}/PrivateSubnetC"
+      Name:  !Sub "/${ProductName}/${Environment}/PrivateSubnetC"
       Value: !Ref PrivateSubnetC
       Type: String

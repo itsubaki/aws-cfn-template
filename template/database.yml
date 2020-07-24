@@ -4,7 +4,7 @@ Description:
   AWS Database Resource
 
 Parameters:
-  ProjectName:
+  ProductName:
     Description: ""
     Type: String
     Default: example
@@ -61,9 +61,9 @@ Resources:
     Properties:
       DBSubnetGroupDescription: "SubnetGroup"
       SubnetIds:
-        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSubnetA:1}}'
-        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSubnetB:1}}'
-        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSubnetC:1}}'
+        - !Sub '{{resolve:ssm:/${ProductName}/${Environment}/PrivateSubnetA:1}}'
+        - !Sub '{{resolve:ssm:/${ProductName}/${Environment}/PrivateSubnetB:1}}'
+        - !Sub '{{resolve:ssm:/${ProductName}/${Environment}/PrivateSubnetC:1}}'
 
   ClusterParameterGroup:
     Type: AWS::RDS::DBClusterParameterGroup
@@ -90,7 +90,7 @@ Resources:
     Type: AWS::RDS::DBCluster
     DeletionPolicy: Snapshot
     Properties:
-      Name: !Sub "${ProjectName}.${Environment}.${Role}"
+      Name: !Sub "${ProductName}.${Environment}.${Role}"
       Engine: aurora
       MasterUsername:     !Ref MasterUsername
       MasterUserPassword: !Ref MasterUserPassword
@@ -98,7 +98,7 @@ Resources:
       DeletionProtection: !Ref DeletionProtection
       DBClusterParameterGroupName: !Ref ClusterParameterGroup
       VpcSecurityGroupIds:
-        - !Sub '{{resolve:ssm:/${ProjectName}/${Environment}/PrivateSecurityGroup:1}}'
+        - !Sub '{{resolve:ssm:/${ProductName}/${Environment}/PrivateSecurityGroup:1}}'
 
   InstanceA:
     Type: AWS::RDS::DBInstance
@@ -110,8 +110,8 @@ Resources:
       DBInstanceClass:      !Ref DBInstanceClass
       EnablePerformanceInsights: true
       Tags:
-        - Key: ProjectName
-          Value: !Ref ProjectName
+        - Key: ProductName
+          Value: !Ref ProductName
         - Key: Environment
           Value: !Ref Environment
         - Key: Role
@@ -128,8 +128,8 @@ Resources:
       DBInstanceClass:      !Ref DBInstanceClass
       EnablePerformanceInsights: true
       Tags:
-        - Key: ProjectName
-          Value: !Ref ProjectName
+        - Key: ProductName
+          Value: !Ref ProductName
         - Key: Environment
           Value: !Ref Environment
         - Key: Role
@@ -139,7 +139,7 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "EndpointAddress"
-      Name: !Sub "/${ProjectName}/${Environment}/database/${Role}/EndpointAddress"
+      Name: !Sub "/${ProductName}/${Environment}/database/${Role}/EndpointAddress"
       Value: !GetAtt DBCluster.Endpoint.Address
       Type: String
 
@@ -147,7 +147,7 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "ReadEndpointAddress"
-      Name: !Sub "/${ProjectName}/${Environment}/database/${Role}/ReadEndpointAddress"
+      Name: !Sub "/${ProductName}/${Environment}/database/${Role}/ReadEndpointAddress"
       Value: !GetAtt DBCluster.ReadEndpoint.Address
       Type: String
 
@@ -155,7 +155,7 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "MasterUsername"
-      Name: !Sub "/${ProjectName}/${Environment}/database/${Role}/MasterUsername"
+      Name: !Sub "/${ProductName}/${Environment}/database/${Role}/MasterUsername"
       Value: !Ref MasterUsername
       Type: String
 
@@ -163,6 +163,6 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "MasterUserPassword"
-      Name: !Sub "/${ProjectName}/${Environment}/database/${Role}/MasterUserPassword"
+      Name: !Sub "/${ProductName}/${Environment}/database/${Role}/MasterUserPassword"
       Value: !Ref MasterUserPassword
       Type: String
