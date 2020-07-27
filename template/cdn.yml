@@ -1,10 +1,9 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 
-Description:
-  AWS Content Delivery Network Resource
+Description: AWS Content Delivery Network Resource
 
 Parameters:
-  ProductName:
+  ProductID:
     Description: ""
     Type: String
     Default: example
@@ -35,25 +34,25 @@ Resources:
     Properties:
       Type: A
       AliasTarget:
-        DNSName:      !GetAtt Distribution.DomainName
+        DNSName: !GetAtt Distribution.DomainName
         HostedZoneId: Z2FDTNDATAQYW2
       Comment: ""
-      HostedZoneName: !Sub "${ProductName}.${DomainName}."
-      Name: !Sub "${Role}-${Environment}.${ProductName}.${DomainName}"
+      HostedZoneName: !Sub "${ProductID}.${DomainName}."
+      Name: !Sub "${Role}-${Environment}.${ProductID}.${DomainName}"
 
   Distribution:
-    DependsOn: [ "Bucket" ]
+    DependsOn: ["Bucket"]
     Type: AWS::CloudFront::Distribution
     Properties:
       DistributionConfig:
         Origins:
-          - DomainName: !Sub "${Role}-${Environment}.${ProductName}.${DomainName}.s3-website-${AWS::Region}.amazonaws.com"
+          - DomainName: !Sub "${Role}-${Environment}.${ProductID}.${DomainName}.s3-website-${AWS::Region}.amazonaws.com"
             Id: S3Origin
             CustomOriginConfig:
               OriginProtocolPolicy: http-only
         Enabled: true
         Aliases:
-          - !Sub "${Role}-${Environment}.${ProductName}.${DomainName}"
+          - !Sub "${Role}-${Environment}.${ProductID}.${DomainName}"
         DefaultCacheBehavior:
           TargetOriginId: S3Origin
           ForwardedValues:
@@ -72,7 +71,7 @@ Resources:
     DeletionPolicy: Retain
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub "${Role}-${Environment}.${ProductName}.${DomainName}"
+      BucketName: !Sub "${Role}-${Environment}.${ProductID}.${DomainName}"
       VersioningConfiguration:
         Status: Enabled
       WebsiteConfiguration:
@@ -81,7 +80,7 @@ Resources:
   BucketPolicy:
     Type: "AWS::S3::BucketPolicy"
     Properties:
-      Bucket: !Sub "${Role}-${Environment}.${ProductName}.${DomainName}"
+      Bucket: !Sub "${Role}-${Environment}.${ProductID}.${DomainName}"
       PolicyDocument:
         Statement:
           - Sid: 1

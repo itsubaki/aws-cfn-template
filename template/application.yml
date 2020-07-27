@@ -4,7 +4,7 @@ Description:
   AWS Application Resource
 
 Parameters:
-  ProductName:
+  ProductID:
     Description: ""
     Type: String
     Default: example
@@ -25,29 +25,29 @@ Resources:
   LoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
-      Name: !Sub "${Role}-${Environment}-${ProductName}"
+      Name: !Sub "${Role}-${Environment}-${ProductID}"
       Scheme: internet-facing
       LoadBalancerAttributes:
         - Key: access_logs.s3.enabled
           Value: true
         - Key: access_logs.s3.bucket
-          Value: !Sub "log.${ProductName}.${DomainName}"
+          Value: !Sub "log.${ProductID}.${DomainName}"
         - Key: idle_timeout.timeout_seconds
           Value: 60
       SecurityGroups:
-        - !Sub '{{resolve:ssm:/${ProductName}/${Environment}/PublicSecurityGroup:1}}'
+        - !Sub '{{resolve:ssm:/${ProductID}/${Environment}/PublicSecurityGroup:1}}'
       Subnets:
-        - !Sub '{{resolve:ssm:/${ProductName}/${Environment}/PublicSubnetA:1}}'
-        - !Sub '{{resolve:ssm:/${ProductName}/${Environment}/PublicSubnetB:1}}'
-        - !Sub '{{resolve:ssm:/${ProductName}/${Environment}/PublicSubnetC:1}}'
+        - !Sub '{{resolve:ssm:/${ProductID}/${Environment}/PublicSubnetA:1}}'
+        - !Sub '{{resolve:ssm:/${ProductID}/${Environment}/PublicSubnetB:1}}'
+        - !Sub '{{resolve:ssm:/${ProductID}/${Environment}/PublicSubnetC:1}}'
 
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      Name: !Sub "${Role}-${Environment}-${ProductName}"
+      Name: !Sub "${Role}-${Environment}-${ProductID}"
       Port: "80"
       Protocol: "HTTP"
-      VpcId: !Sub '{{resolve:ssm:/${ProductName}/${Environment}/VPCID:1}}'
+      VpcId: !Sub '{{resolve:ssm:/${ProductID}/${Environment}/VPCID:1}}'
       HealthCheckPath:            !Ref HealthCheckPath
       HealthCheckIntervalSeconds: !Ref HealthCheckIntervalSeconds
       HealthCheckTimeoutSeconds:  !Ref HealthCheckTimeoutSeconds
@@ -61,7 +61,7 @@ Resources:
       Port: "443"
       Protocol: "HTTPS"
       Certificates:
-        - CertificateArn: !Sub '{{resolve:ssm:/${ProductName}/${Environment}/Certificate:1}}'
+        - CertificateArn: !Sub '{{resolve:ssm:/${ProductID}/${Environment}/Certificate:1}}'
       DefaultActions:
         - TargetGroupArn: !Ref TargetGroup
           Type: forward
@@ -88,7 +88,7 @@ Resources:
   IAMRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub "${Role}-${Environment}-${ProductName}"
+      RoleName: !Sub "${Role}-${Environment}-${ProductID}"
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -101,7 +101,7 @@ Resources:
       ManagedPolicyArns:
         - "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
       Policies:
-        - PolicyName: !Sub "${Role}-${Environment}-${ProductName}"
+        - PolicyName: !Sub "${Role}-${Environment}-${ProductID}"
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -123,8 +123,8 @@ Resources:
                 Action:
                   - "s3:*"
                 Resource:
-                  - !Sub "arn:aws:s3:::log-${Environment}.${ProductName}.${DomainName}"
-                  - !Sub "arn:aws:s3:::log-${Environment}.${ProductName}.${DomainName}/*"
+                  - !Sub "arn:aws:s3:::log-${Environment}.${ProductID}.${DomainName}"
+                  - !Sub "arn:aws:s3:::log-${Environment}.${ProductID}.${DomainName}/*"
 
   AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
@@ -145,9 +145,9 @@ Resources:
       TargetGroupARNs:
         - !Ref TargetGroup
       VPCZoneIdentifier:
-        - !Sub '{{resolve:ssm:/${ProductName}/${Environment}/PrivateSubnetA:1}}'
-        - !Sub '{{resolve:ssm:/${ProductName}/${Environment}/PrivateSubnetB:1}}'
-        - !Sub '{{resolve:ssm:/${ProductName}/${Environment}/PrivateSubnetC:1}}'
+        - !Sub '{{resolve:ssm:/${ProductID}/${Environment}/PrivateSubnetA:1}}'
+        - !Sub '{{resolve:ssm:/${ProductID}/${Environment}/PrivateSubnetB:1}}'
+        - !Sub '{{resolve:ssm:/${ProductID}/${Environment}/PrivateSubnetC:1}}'
       HealthCheckType: "ELB"
       HealthCheckGracePeriod: 600
 
@@ -165,7 +165,7 @@ Resources:
             VolumeType: "gp2"
             VolumeSize: 30
       SecurityGroups:
-        - !Sub '{{resolve:ssm:/${ProductName}/${Environment}/PublicSecurityGroup:1}}'
+        - !Sub '{{resolve:ssm:/${ProductID}/${Environment}/PublicSecurityGroup:1}}'
       UserData:
         Fn::Base64: !Sub |
           #!/bin/sh

@@ -1,10 +1,9 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 
-Description:
-  AWS Database Resource
+Description: AWS Database Resource
 
 Parameters:
-  ProductName:
+  ProductID:
     Description: ""
     Type: String
     Default: example
@@ -53,7 +52,7 @@ Parameters:
       - false
 
 Conditions:
-  MultiAZ: !Equals [ !Ref MultiAZ, "true" ]
+  MultiAZ: !Equals [!Ref MultiAZ, "true"]
 
 Resources:
   SubnetGroup:
@@ -61,9 +60,9 @@ Resources:
     Properties:
       DBSubnetGroupDescription: "SubnetGroup"
       SubnetIds:
-        - !Sub '{{resolve:ssm:/${ProductName}/${Environment}/PrivateSubnetA:1}}'
-        - !Sub '{{resolve:ssm:/${ProductName}/${Environment}/PrivateSubnetB:1}}'
-        - !Sub '{{resolve:ssm:/${ProductName}/${Environment}/PrivateSubnetC:1}}'
+        - !Sub "{{resolve:ssm:/${ProductID}/${Environment}/PrivateSubnetA:1}}"
+        - !Sub "{{resolve:ssm:/${ProductID}/${Environment}/PrivateSubnetB:1}}"
+        - !Sub "{{resolve:ssm:/${ProductID}/${Environment}/PrivateSubnetC:1}}"
 
   ClusterParameterGroup:
     Type: AWS::RDS::DBClusterParameterGroup
@@ -71,11 +70,11 @@ Resources:
       Description: "ClusterParameterGroup"
       Family: aurora5.6
       Parameters:
-        character_set_client:     "utf8mb4"
+        character_set_client: "utf8mb4"
         character_set_connection: "utf8mb4"
-        character_set_database:   "utf8mb4"
-        character_set_results:    "utf8mb4"
-        character_set_server:     "utf8mb4"
+        character_set_database: "utf8mb4"
+        character_set_results: "utf8mb4"
+        character_set_server: "utf8mb4"
 
   ParameterGroup:
     Type: AWS::RDS::DBParameterGroup
@@ -90,28 +89,28 @@ Resources:
     Type: AWS::RDS::DBCluster
     DeletionPolicy: Snapshot
     Properties:
-      Name: !Sub "${ProductName}.${Environment}.${Role}"
+      Name: !Sub "${ProductID}.${Environment}.${Role}"
       Engine: aurora
-      MasterUsername:     !Ref MasterUsername
+      MasterUsername: !Ref MasterUsername
       MasterUserPassword: !Ref MasterUserPassword
-      DBSubnetGroupName:  !Ref SubnetGroup
+      DBSubnetGroupName: !Ref SubnetGroup
       DeletionProtection: !Ref DeletionProtection
       DBClusterParameterGroupName: !Ref ClusterParameterGroup
       VpcSecurityGroupIds:
-        - !Sub '{{resolve:ssm:/${ProductName}/${Environment}/PrivateSecurityGroup:1}}'
+        - !Sub "{{resolve:ssm:/${ProductID}/${Environment}/PrivateSecurityGroup:1}}"
 
   InstanceA:
     Type: AWS::RDS::DBInstance
     Properties:
       Engine: aurora
-      DBClusterIdentifier:  !Ref Cluster
-      DBSubnetGroupName:    !Ref SubnetGroup
+      DBClusterIdentifier: !Ref Cluster
+      DBSubnetGroupName: !Ref SubnetGroup
       DBParameterGroupName: !Ref ParameterGroup
-      DBInstanceClass:      !Ref DBInstanceClass
+      DBInstanceClass: !Ref DBInstanceClass
       EnablePerformanceInsights: true
       Tags:
-        - Key: ProductName
-          Value: !Ref ProductName
+        - Key: ProductID
+          Value: !Ref ProductID
         - Key: Environment
           Value: !Ref Environment
         - Key: Role
@@ -122,14 +121,14 @@ Resources:
     Condition: MultiAZ
     Properties:
       Engine: aurora
-      DBClusterIdentifier:  !Ref Cluster
-      DBSubnetGroupName:    !Ref SubnetGroup
+      DBClusterIdentifier: !Ref Cluster
+      DBSubnetGroupName: !Ref SubnetGroup
       DBParameterGroupName: !Ref ParameterGroup
-      DBInstanceClass:      !Ref DBInstanceClass
+      DBInstanceClass: !Ref DBInstanceClass
       EnablePerformanceInsights: true
       Tags:
-        - Key: ProductName
-          Value: !Ref ProductName
+        - Key: ProductID
+          Value: !Ref ProductID
         - Key: Environment
           Value: !Ref Environment
         - Key: Role
@@ -139,7 +138,7 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "EndpointAddress"
-      Name: !Sub "/${ProductName}/${Environment}/database/${Role}/EndpointAddress"
+      Name: !Sub "/${ProductID}/${Environment}/database/${Role}/EndpointAddress"
       Value: !GetAtt DBCluster.Endpoint.Address
       Type: String
 
@@ -147,7 +146,7 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "ReadEndpointAddress"
-      Name: !Sub "/${ProductName}/${Environment}/database/${Role}/ReadEndpointAddress"
+      Name: !Sub "/${ProductID}/${Environment}/database/${Role}/ReadEndpointAddress"
       Value: !GetAtt DBCluster.ReadEndpoint.Address
       Type: String
 
@@ -155,7 +154,7 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "MasterUsername"
-      Name: !Sub "/${ProductName}/${Environment}/database/${Role}/MasterUsername"
+      Name: !Sub "/${ProductID}/${Environment}/database/${Role}/MasterUsername"
       Value: !Ref MasterUsername
       Type: String
 
@@ -163,6 +162,6 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "MasterUserPassword"
-      Name: !Sub "/${ProductName}/${Environment}/database/${Role}/MasterUserPassword"
+      Name: !Sub "/${ProductID}/${Environment}/database/${Role}/MasterUserPassword"
       Value: !Ref MasterUserPassword
       Type: String

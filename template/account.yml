@@ -1,10 +1,9 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 
-Description:
-  AWS Account Resource
+Description: AWS Account Resource
 
 Parameters:
-  ProductName:
+  ProductID:
     Description: ""
     Type: String
     Default: example
@@ -19,31 +18,31 @@ Resources:
     Properties:
       HostedZoneConfig:
         Comment: ""
-      Name: !Sub ${ProductName}.${DomainName}.
+      Name: !Sub ${ProductID}.${DomainName}.
       QueryLoggingConfig:
-        CloudWatchLogsLogGroupArn: !Sub "arn:aws:logs:us-east-1:${AWS::AccountId}:log-group:/aws/hostedzone/${ProductName}.${DomainName}"
+        CloudWatchLogsLogGroupArn: !Sub "arn:aws:logs:us-east-1:${AWS::AccountId}:log-group:/aws/hostedzone/${ProductID}.${DomainName}"
 
   Certificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
-      DomainName: !Sub "*.${ProductName}.${DomainName}"
+      DomainName: !Sub "*.${ProductID}.${DomainName}"
       DomainValidationOptions:
-        - DomainName: !Sub "*.${ProductName}.${DomainName}"
-          ValidationDomain: !Sub "${ProductName}.${DomainName}"
+        - DomainName: !Sub "*.${ProductID}.${DomainName}"
+          ValidationDomain: !Sub "${ProductID}.${DomainName}"
       SubjectAlternativeNames:
-        - !Sub "${ProductName}.${DomainName}"
+        - !Sub "${ProductID}.${DomainName}"
       ValidationMethod: "DNS"
 
   CloudTrailS3Bucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     Properties:
-      BucketName: !Sub cloudtrail.${ProductName}.${DomainName}
+      BucketName: !Sub cloudtrail.${ProductID}.${DomainName}
       Tags:
         - Key: Name
-          Value: !Sub cloudtrail.${ProductName}.${DomainName}
-        - Key: ProductName
-          Value: !Ref ProductName
+          Value: !Sub cloudtrail.${ProductID}.${DomainName}
+        - Key: ProductID
+          Value: !Ref ProductID
 
   CloudTrailS3BucketPolicy:
     DependsOn: S3BucketLog
@@ -82,16 +81,16 @@ Resources:
     DependsOn: BucketPolicy
     Type: AWS::CloudTrail::Trail
     Properties:
-      S3BucketName: !Sub cloudtrail.${ProductName}.${DomainName}
+      S3BucketName: !Sub cloudtrail.${ProductID}.${DomainName}
       IncludeGlobalServiceEvents: true
       EnableLogFileValidation: true
       IsMultiRegionTrail: true
       IsLogging: true
       Tags:
         - Key: Name
-          Value: !Sub cloudtrail.${ProductName}.${DomainName}
-        - Key: ProductName
-          Value: !Ref ProductName
+          Value: !Sub cloudtrail.${ProductID}.${DomainName}
+        - Key: ProductID
+          Value: !Ref ProductID
 
   GuardDutyDetector:
     Type: AWS::GuardDuty::Detector

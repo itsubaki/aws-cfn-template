@@ -1,10 +1,9 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 
-Description:
-  AWS Storage Resource
+Description: AWS Storage Resource
 
 Parameters:
-  ProductName:
+  ProductID:
     Description: ""
     Type: String
     Default: example
@@ -22,8 +21,8 @@ Parameters:
     Default: example.com
 
 Outputs:
-  ProductName:
-    Value: !Ref ProductName
+  ProductID:
+    Value: !Ref ProductID
   S3BucketName:
     Value: !Ref S3Bucket
   VPCEndpoint:
@@ -33,12 +32,12 @@ Resources:
   S3Bucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub ${Role}-${Environment}.${ProductName}.${DomainName}
+      BucketName: !Sub ${Role}-${Environment}.${ProductID}.${DomainName}
       Tags:
         - Key: Name
-          Value: !Sub ${Role}-${Environment}.${ProductName}.${DomainName}
-        - Key: ProductName
-          Value: !Ref ProductName
+          Value: !Sub ${Role}-${Environment}.${ProductID}.${DomainName}
+        - Key: ProductID
+          Value: !Ref ProductID
         - Key: Environment
           Value: !Ref Environment
         - Key: Role
@@ -49,16 +48,16 @@ Resources:
   VPCEndpoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:
-      VpcId: !Sub '{{resolve:ssm:/${ProductName}/${Environment}/VPCID:1}}'
+      VpcId: !Sub "{{resolve:ssm:/${ProductID}/${Environment}/VPCID:1}}"
       ServiceName: !Sub "com.amazonaws.${AWS::Region}.s3"
       RouteTableIds:
-        - !Sub '{{resolve:ssm:/${ProductName}/${Environment}/PublicRouteTable:1}}'
-        - !Sub '{{resolve:ssm:/${ProductName}/${Environment}/PrivateRouteTable:1}}'
+        - !Sub "{{resolve:ssm:/${ProductID}/${Environment}/PublicRouteTable:1}}"
+        - !Sub "{{resolve:ssm:/${ProductID}/${Environment}/PrivateRouteTable:1}}"
 
   SSMS3BucketName:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "PrivateSubnetA"
-      Name: !Sub "/${ProductName}/${Environment}/storage/${Role}/S3BucketName"
-      Value: !Sub ${Role}-${Environment}.${ProductName}.${DomainName}
+      Name: !Sub "/${ProductID}/${Environment}/storage/${Role}/S3BucketName"
+      Value: !Sub ${Role}-${Environment}.${ProductID}.${DomainName}
       Type: String

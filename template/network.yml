@@ -1,10 +1,9 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 
-Description:
-  AWS Network Resource
+Description: AWS Network Resource
 
 Parameters:
-  ProductName:
+  ProductID:
     Description: ""
     Type: String
     Default: example
@@ -72,7 +71,7 @@ Metadata:
       - Label:
           default: "Project Configuration"
         Parameters:
-          - ProductName
+          - ProductID
           - Environment
           - DomainName
       - Label:
@@ -93,8 +92,8 @@ Metadata:
           - PrivateSubnetCCidrBlock
 
 Outputs:
-  ProductName:
-    Value: !Ref ProductName
+  ProductID:
+    Value: !Ref ProductID
   Environment:
     Value: !Ref Environment
   DomainName:
@@ -106,15 +105,15 @@ Resources:
   VPC:
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock:          !Ref CidrBlock
-      EnableDnsSupport:   !Ref EnableDnsSupport
+      CidrBlock: !Ref CidrBlock
+      EnableDnsSupport: !Ref EnableDnsSupport
       EnableDnsHostnames: !Ref EnableDnsHostnames
-      InstanceTenancy:    !Ref InstanceTenancy
+      InstanceTenancy: !Ref InstanceTenancy
       Tags:
         - Key: Name
-          Value: !Sub "${ProductName}.${Environment}.vpc"
-        - Key: ProductName
-          Value: !Ref ProductName
+          Value: !Sub "${ProductID}.${Environment}.vpc"
+        - Key: ProductID
+          Value: !Ref ProductID
         - Key: Environment
           Value: !Ref Environment
 
@@ -124,9 +123,9 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Sub "${ProductName}.${Environment}.rt.public"
-        - Key: ProductName
-          Value: !Ref ProductName
+          Value: !Sub "${ProductID}.${Environment}.rt.public"
+        - Key: ProductID
+          Value: !Ref ProductID
         - Key: Environment
           Value: !Ref Environment
 
@@ -136,9 +135,9 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Sub "${ProductName}.${Environment}.rt.private"
-        - Key: ProductName
-          Value: !Ref ProductName
+          Value: !Sub "${ProductID}.${Environment}.rt.private"
+        - Key: ProductID
+          Value: !Ref ProductID
         - Key: Environment
           Value: !Ref Environment
 
@@ -147,9 +146,9 @@ Resources:
     Properties:
       Tags:
         - Key: Name
-          Value: !Sub "${ProductName}.${Environment}.igw"
-        - Key: ProductName
-          Value: !Ref ProductName
+          Value: !Sub "${ProductID}.${Environment}.igw"
+        - Key: ProductID
+          Value: !Ref ProductID
         - Key: Environment
           Value: !Ref Environment
 
@@ -162,134 +161,134 @@ Resources:
   Route:
     Type: AWS::EC2::Route
     Properties:
-      GatewayId:    !Ref InternetGateway
+      GatewayId: !Ref InternetGateway
       RouteTableId: !Ref PublicRouteTable
       DestinationCidrBlock: 0.0.0.0/0
 
   PublicSubnetA:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId:     !Ref VPC
+      VpcId: !Ref VPC
       CidrBlock: !Ref PublicSubnetACidrBlock
-      AvailabilityZone: !Select [ "0", !GetAZs ""]
+      AvailabilityZone: !Select ["0", !GetAZs ""]
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub "${ProductName}.${Environment}.public.subnet.a"
-        - Key: ProductName
-          Value: !Ref ProductName
+          Value: !Sub "${ProductID}.${Environment}.public.subnet.a"
+        - Key: ProductID
+          Value: !Ref ProductID
         - Key: Environment
           Value: !Ref Environment
 
   PublicSubnetB:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId:     !Ref VPC
+      VpcId: !Ref VPC
       CidrBlock: !Ref PublicSubnetBCidrBlock
-      AvailabilityZone: !Select [ "1", !GetAZs ""]
+      AvailabilityZone: !Select ["1", !GetAZs ""]
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub "${ProductName}.${Environment}.public.subnet.b"
-        - Key: ProductName
-          Value: !Ref ProductName
+          Value: !Sub "${ProductID}.${Environment}.public.subnet.b"
+        - Key: ProductID
+          Value: !Ref ProductID
         - Key: Environment
           Value: !Ref Environment
 
   PublicSubnetC:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId:     !Ref VPC
+      VpcId: !Ref VPC
       CidrBlock: !Ref PublicSubnetCCidrBlock
-      AvailabilityZone: !Select [ "2", !GetAZs ""]
+      AvailabilityZone: !Select ["2", !GetAZs ""]
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub "${ProductName}.${Environment}.public.subnet.c"
-        - Key: ProductName
-          Value: !Ref ProductName
+          Value: !Sub "${ProductID}.${Environment}.public.subnet.c"
+        - Key: ProductID
+          Value: !Ref ProductID
         - Key: Environment
           Value: !Ref Environment
 
   PrivateSubnetA:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId:     !Ref VPC
+      VpcId: !Ref VPC
       CidrBlock: !Ref PrivateSubnetACidrBlock
-      AvailabilityZone: !Select [ "0", !GetAZs ""]
+      AvailabilityZone: !Select ["0", !GetAZs ""]
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub "${ProductName}.${Environment}.private.subnet.a"
-        - Key: ProductName
-          Value: !Ref ProductName
+          Value: !Sub "${ProductID}.${Environment}.private.subnet.a"
+        - Key: ProductID
+          Value: !Ref ProductID
         - Key: Environment
           Value: !Ref Environment
 
   PrivateSubnetB:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId:     !Ref VPC
+      VpcId: !Ref VPC
       CidrBlock: !Ref PrivateSubnetBCidrBlock
-      AvailabilityZone: !Select [ "1", !GetAZs ""]
+      AvailabilityZone: !Select ["1", !GetAZs ""]
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub "${ProductName}.${Environment}.private.subnet.b"
-        - Key: ProductName
-          Value: !Ref ProductName
+          Value: !Sub "${ProductID}.${Environment}.private.subnet.b"
+        - Key: ProductID
+          Value: !Ref ProductID
         - Key: Environment
           Value: !Ref Environment
 
   PrivateSubnetC:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId:     !Ref VPC
+      VpcId: !Ref VPC
       CidrBlock: !Ref PrivateSubnetCCidrBlock
-      AvailabilityZone: !Select [ "2", !GetAZs ""]
+      AvailabilityZone: !Select ["2", !GetAZs ""]
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub "${ProductName}.${Environment}.private.subnet.c"
-        - Key: ProductName
-          Value: !Ref ProductName
+          Value: !Sub "${ProductID}.${Environment}.private.subnet.c"
+        - Key: ProductID
+          Value: !Ref ProductID
         - Key: Environment
           Value: !Ref Environment
 
   PublicSubnetARouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId:     !Ref PublicSubnetA
+      SubnetId: !Ref PublicSubnetA
       RouteTableId: !Ref PublicRouteTable
 
   PublicSubnetBRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId:     !Ref PublicSubnetB
+      SubnetId: !Ref PublicSubnetB
       RouteTableId: !Ref PublicRouteTable
 
   PublicSubnetCRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId:     !Ref PublicSubnetC
+      SubnetId: !Ref PublicSubnetC
       RouteTableId: !Ref PublicRouteTable
 
   PrivateSubnetARouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId:     !Ref PrivateSubnetA
+      SubnetId: !Ref PrivateSubnetA
       RouteTableId: !Ref PrivateRouteTable
 
   PrivateSubnetBRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId:     !Ref PrivateSubnetB
+      SubnetId: !Ref PrivateSubnetB
       RouteTableId: !Ref PrivateRouteTable
 
   PrivateSubnetCRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId:     !Ref PrivateSubnetC
+      SubnetId: !Ref PrivateSubnetC
       RouteTableId: !Ref PrivateRouteTable
 
   PublicSecurityGroup:
@@ -299,9 +298,9 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Sub "${ProductName}.${Environment}.sg.public"
-        - Key: ProductName
-          Value: !Ref ProductName
+          Value: !Sub "${ProductID}.${Environment}.sg.public"
+        - Key: ProductID
+          Value: !Ref ProductID
         - Key: Environment
           Value: !Ref Environment
 
@@ -312,9 +311,9 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Sub "${ProductName}.${Environment}.sg.private"
-        - Key: ProductName
-          Value: !Ref ProductName
+          Value: !Sub "${ProductID}.${Environment}.sg.private"
+        - Key: ProductID
+          Value: !Ref ProductID
         - Key: Environment
           Value: !Ref Environment
 
@@ -322,7 +321,7 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "DomainName"
-      Name: !Sub "/${ProductName}/${Environment}/DomainName"
+      Name: !Sub "/${ProductID}/${Environment}/DomainName"
       Value: !Ref DomainName
       Type: String
 
@@ -330,7 +329,7 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "VPC"
-      Name:  !Sub "/${ProductName}/${Environment}/VPCID"
+      Name: !Sub "/${ProductID}/${Environment}/VPCID"
       Value: !Ref VPC
       Type: String
 
@@ -338,7 +337,7 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "PublicRouteTable"
-      Name:  !Sub "/${ProductName}/${Environment}/PublicRouteTable"
+      Name: !Sub "/${ProductID}/${Environment}/PublicRouteTable"
       Value: !Ref PublicRouteTable
       Type: String
 
@@ -346,7 +345,7 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "PrivateRouteTable"
-      Name:  !Sub "/${ProductName}/${Environment}/PrivateRouteTable"
+      Name: !Sub "/${ProductID}/${Environment}/PrivateRouteTable"
       Value: !Ref PrivateRouteTable
       Type: String
 
@@ -354,7 +353,7 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "PublicSecurityGroup"
-      Name:  !Sub "/${ProductName}/${Environment}/PublicSecurityGroup"
+      Name: !Sub "/${ProductID}/${Environment}/PublicSecurityGroup"
       Value: !Ref PublicSecurityGroup
       Type: String
 
@@ -362,7 +361,7 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "PrivateSecurityGroup"
-      Name:  !Sub "/${ProductName}/${Environment}/PrivateSecurityGroup"
+      Name: !Sub "/${ProductID}/${Environment}/PrivateSecurityGroup"
       Value: !Ref PrivateSecurityGroup
       Type: String
 
@@ -370,7 +369,7 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "PrivateSubnetA"
-      Name:  !Sub "/${ProductName}/${Environment}/PrivateSubnetA"
+      Name: !Sub "/${ProductID}/${Environment}/PrivateSubnetA"
       Value: !Ref PrivateSubnetA
       Type: String
 
@@ -378,7 +377,7 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "PrivateSubnetB"
-      Name:  !Sub "/${ProductName}/${Environment}/PrivateSubnetB"
+      Name: !Sub "/${ProductID}/${Environment}/PrivateSubnetB"
       Value: !Ref PrivateSubnetB
       Type: String
 
@@ -386,6 +385,6 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "PrivateSubnetC"
-      Name:  !Sub "/${ProductName}/${Environment}/PrivateSubnetC"
+      Name: !Sub "/${ProductID}/${Environment}/PrivateSubnetC"
       Value: !Ref PrivateSubnetC
       Type: String
