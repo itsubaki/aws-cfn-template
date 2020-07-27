@@ -178,5 +178,28 @@ Resources:
           pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
           cp -a /usr/local/init/ubuntu/cfn-hup /etc/init.d/cfn-hup
           chmod u+x /etc/init.d/cfn-hup
-
+          
+          # setup environment
+          curl -S -s http://169.254.169.254/latest/meta-data/instance-id > /tmp/instance-id
+          echo "export InstanceID=`cat /tmp/instance-id`" >> /etc/profile.d/userdata.sh
+          echo "export ProductID=${ProductID}"            >> /etc/profile.d/userdata.sh
+          echo "export Environment=${Environment}"        >> /etc/profile.d/userdata.sh
+          echo "export Role=${Role}"                      >> /etc/profile.d/userdata.sh
+          echo "export DomainName=${DomainName}"          >> /etc/profile.d/userdata.sh
+          echo "export AWS_REGION=${AWS::Region}"         >> /etc/profile.d/userdata.sh
+          
+          . /etc/profile.d/userdata.sh
+          env
+          
+          # download ansible playbook
+#           mkdir -p /home/ubuntu/ansible
+#           chown ubuntu:ubuntu /home/ubuntu/ansible
+#           cd /home/ubuntu/ansible
+#           aws s3 cp s3://HOGEHOGE .
+#           unzip playbook.zip
+          
+#           ansible-playbook ${Role}.yml --connection=local -e @vars/all.yml
+#           echo $? >> /tmp/ansible-status
+          
+          # send status to cloudformation
           /usr/local/bin/cfn-signal -e `cat /tmp/status` --stack ${AWS::StackName} --region ${AWS::Region} --resource AutoScalingGroup
